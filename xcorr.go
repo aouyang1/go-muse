@@ -76,6 +76,7 @@ func Conj(x []complex128) []complex128 {
 	return out
 }
 
+// ZeroPad re-slices the input array to a size n leaving trailing zeroes
 func ZeroPad(x []float64, n int) []float64 {
 	if n < len(x) {
 		return x
@@ -88,6 +89,8 @@ func ZeroPad(x []float64, n int) []float64 {
 	return xpad
 }
 
+// ZNormalize removes the mean and divides each value by the standard
+// deviation of the resulting series
 func ZNormalize(x []float64) []float64 {
 	meanX := floats.Sum(x) / float64(len(x))
 
