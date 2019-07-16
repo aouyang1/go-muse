@@ -3,7 +3,7 @@ package muse
 import (
 	"fmt"
 
-	"github.com/aouyang1/go-matrixprofile/siggen"
+	"github.com/matrix-profile-foundation/go-matrixprofile/siggen"
 )
 
 func Example() {
