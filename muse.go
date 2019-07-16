@@ -28,7 +28,7 @@ func New(ref *Series, comp *Group, results *Results) *Muse {
 
 // scoreSingle calculates the highest score for a single set of label values given
 // a reference time series
-func (m Muse) scoreSingle(idx int, refFT []complex128, labelValues Labels, n int, sem chan struct{}, graphScores []chan Score) {
+func (m *Muse) scoreSingle(idx int, refFT []complex128, labelValues Labels, n int, sem chan struct{}, graphScores []chan Score) {
 	var compScore Score
 	var maxVal float64
 	var lag int
@@ -45,7 +45,7 @@ func (m Muse) scoreSingle(idx int, refFT []complex128, labelValues Labels, n int
 		// is equivalent. output value will range between 0 and 1 due to normalizing
 		_, lag, maxVal = XCorrWithX(refFT, compTs.Values(), n, true)
 		compScore = Score{
-			Labels:       compTs.LabelValues(),
+			Labels:       compTs.Labels(),
 			Lag:          lag,
 			PercentScore: int(math.Abs(maxVal*100) + 0.5),
 		}
@@ -146,13 +146,13 @@ func NewResults(maxLag int, topN int, threshold float64) *Results {
 }
 
 // passed checks if the input score satisfies the Results lag and threshold requirements
-func (r Results) passed(s Score) bool {
+func (r *Results) passed(s Score) bool {
 	return math.Abs(float64(s.Lag)) <= float64(r.MaxLag) &&
 		math.Abs(float64(s.PercentScore)) >= r.Threshold*100
 }
 
 // Fetch returns the sorted scores in ascending order along with the average percent score
-func (r Results) Fetch() (Scores, float64) {
+func (r *Results) Fetch() (Scores, float64) {
 	s := make(Scores, 0, len(r.scores))
 	var score Score
 	var scoreSum int

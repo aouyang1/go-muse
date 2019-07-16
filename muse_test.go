@@ -5,13 +5,10 @@ import (
 )
 
 func TestRunSimple(t *testing.T) {
-	ref, err := NewSeries(
+	ref := NewSeries(
 		[]float64{0, 0, 0, 0, 1, 2, 3, 3, 2, 1, 0, 0},
 		map[string]string{"graph": "graph1"},
 	)
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
 	compGroup := NewGroup("targets")
 
 	data := []struct {
@@ -24,11 +21,8 @@ func TestRunSimple(t *testing.T) {
 	}
 
 	for _, d := range data {
-		comp, err := NewSeries(d.y, d.labels)
-		if err != nil {
-			t.Fatalf("%v", err)
-		}
-		if err = compGroup.Add(comp); err != nil {
+		comp := NewSeries(d.y, d.labels)
+		if err := compGroup.Add(comp); err != nil {
 			t.Fatalf("%v", err)
 		}
 	}
@@ -65,13 +59,10 @@ func TestRunSimple(t *testing.T) {
 }
 
 func TestRunMultiDimensional(t *testing.T) {
-	ref, err := NewSeries(
+	ref := NewSeries(
 		[]float64{0.0, 0.0, 0.0, 0.0, 0.1, 0.2, 0.3, 0.4},
 		map[string]string{"graph": "graph1"},
 	)
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
 	compGroup := NewGroup("targets")
 
 	data := []struct {
@@ -87,11 +78,8 @@ func TestRunMultiDimensional(t *testing.T) {
 	}
 
 	for _, d := range data {
-		comp, err := NewSeries(d.y, d.labels)
-		if err != nil {
-			t.Fatalf("%v", err)
-		}
-		if err = compGroup.Add(comp); err != nil {
+		comp := NewSeries(d.y, d.labels)
+		if err := compGroup.Add(comp); err != nil {
 			t.Fatalf("%v", err)
 		}
 	}
@@ -131,13 +119,10 @@ func TestRunMultiDimensional(t *testing.T) {
 
 func BenchmarkMuseRun(b *testing.B) {
 
-	ref, err := NewSeries(
+	ref := NewSeries(
 		[]float64{0.0, 0.0, 0.0, 0.0, 0.1, 0.2, 0.3, 0.4},
 		map[string]string{"graph": "graph1"},
 	)
-	if err != nil {
-		b.Fatalf("%v", err)
-	}
 	compGroup := NewGroup("targets")
 
 	data := []struct {
@@ -153,11 +138,8 @@ func BenchmarkMuseRun(b *testing.B) {
 	}
 
 	for _, d := range data {
-		comp, err := NewSeries(d.y, d.labels)
-		if err != nil {
-			b.Fatalf("%v", err)
-		}
-		if err = compGroup.Add(comp); err != nil {
+		comp := NewSeries(d.y, d.labels)
+		if err := compGroup.Add(comp); err != nil {
 			b.Fatalf("%v", err)
 		}
 	}

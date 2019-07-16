@@ -1,6 +1,7 @@
 package muse
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -8,76 +9,133 @@ var (
 	y = []float64{0.1, 0.2, 0.3}
 )
 
-func TestNewSeries(t *testing.T) {
+func TestLabelsUID(t *testing.T) {
 	data := []struct {
-		y             []float64
-		labels        map[string]string
-		expectedError bool
+		labels        Labels
+		groupByLabels []string
+		expectedUID   string
 	}{
-		{y, map[string]string{"a": "v1"}, false},
-		{y, nil, true},
+		{
+			Labels{
+				"a": "v1",
+			},
+			[]string{"a"},
+			"a:v1",
+		},
+		{
+			Labels{
+				"a": "v1",
+				"c": "v2",
+				"b": "v3",
+			},
+			nil,
+			"a:v1,b:v3,c:v2",
+		},
+		{
+			Labels{
+				"a": "v1",
+				"c": "v2",
+				"b": "v3",
+			},
+			[]string{"a", "b", "c"},
+			"a:v1,b:v3,c:v2",
+		},
+		{
+			Labels{
+				"a": "v1",
+				"A": "v2",
+				"b": "v3",
+			},
+			[]string{"a", "A", "b"},
+			"A:v2,a:v1,b:v3",
+		},
+		{
+			Labels{
+				"a": "v1",
+				"c": "v2",
+				"b": "v3",
+			},
+			[]string{"a", "c"},
+			"a:v1,c:v2",
+		},
+		{
+			Labels{
+				"a": "v1",
+				"c": "v2",
+				"b": "v3",
+			},
+			[]string{"d"},
+			"",
+		},
 	}
 
-	var err error
+	var uid string
 	for _, d := range data {
-		if _, err = NewSeries(d.y, d.labels); (err != nil) != d.expectedError {
-			t.Fatalf("Expected a %t error for %v", d.expectedError, d)
+		uid = d.labels.UID(d.groupByLabels)
+		if uid != d.expectedUID {
+			t.Fatalf("Expected %s but got %s", d.expectedUID, uid)
 		}
 	}
 }
 
-func TestUID(t *testing.T) {
+func TestNewSeries(t *testing.T) {
 	data := []struct {
-		labels      map[string]string
+		y                 []float64
+		labels            Labels
+		expectedLabelKeys []string
+	}{
+		{y, Labels{"a": "v1"}, []string{"a"}},
+		{y, nil, []string{DefaultLabel}},
+	}
+
+	var s *Series
+	for _, d := range data {
+		s = NewSeries(d.y, d.labels)
+		if !reflect.DeepEqual(s.Labels().Keys(), d.expectedLabelKeys) {
+			t.Fatalf("Expected a %v label keys but got %v", d.expectedLabelKeys, s.Labels().Keys())
+		}
+	}
+}
+
+func TestSeriesUID(t *testing.T) {
+	data := []struct {
+		labels      Labels
 		expectedUID string
 	}{
 		{
-			map[string]string{
+			Labels{
 				"a": "v1",
 			},
 			"a:v1",
 		},
 		{
-			map[string]string{
+			Labels{
 				"a": "v1",
 				"c": "v2",
 				"b": "v3",
 			},
 			"a:v1,b:v3,c:v2",
 		},
-		{
-			map[string]string{
-				"a": "v1",
-				"A": "v2",
-				"b": "v3",
-			},
-			"A:v2,a:v1,b:v3",
-		},
 	}
 
 	var uid string
 	var s *Series
-	var err error
 	for _, d := range data {
-		s, err = NewSeries(y, d.labels)
-		if err != nil {
-			t.Fatalf("Failed to create timeseries, %v", err)
-		}
+		s = NewSeries(y, d.labels)
 		uid = s.UID()
 		if uid != d.expectedUID {
 			t.Fatalf("Expected %s but got %s", d.expectedUID, uid)
 		}
 	}
-
 }
 
 func TestLabels(t *testing.T) {
 	data := []struct {
-		labels         map[string]string
+		labels         Labels
 		expectedLabels []string
 	}{
 		{
-			map[string]string{
+			Labels{
 				"a": "v1",
 				"c": "v2",
 				"b": "v3",
@@ -85,7 +143,7 @@ func TestLabels(t *testing.T) {
 			[]string{"a", "b", "c"},
 		},
 		{
-			map[string]string{
+			Labels{
 				"a": "v1",
 				"A": "v2",
 				"b": "v3",
@@ -96,12 +154,8 @@ func TestLabels(t *testing.T) {
 
 	var labels []string
 	var s *Series
-	var err error
 	for _, d := range data {
-		s, err = NewSeries(y, d.labels)
-		if err != nil {
-			t.Fatalf("Failed to create timeseries, %v", err)
-		}
+		s = NewSeries(y, d.labels)
 		labels = s.labels.Keys()
 		if len(labels) != len(d.expectedLabels) {
 			t.Fatalf("Expected %d labels but got %d", len(d.expectedLabels), len(labels))
@@ -116,24 +170,21 @@ func TestLabels(t *testing.T) {
 
 func TestGroupAdd(t *testing.T) {
 	data := []struct {
-		labels      map[string]string
+		labels      Labels
 		expectError bool
 	}{
-		{map[string]string{"a": "v1"}, false},
-		{map[string]string{"a": "v2"}, false},
-		{map[string]string{"a": "v1", "c": "v2", "b": "v3"}, false},
-		{map[string]string{"a": "v1", "A": "v2", "b": "v3"}, false},
-		{map[string]string{"a": "v1"}, true},
+		{Labels{"a": "v1"}, false},
+		{Labels{"a": "v2"}, false},
+		{Labels{"a": "v1", "c": "v2", "b": "v3"}, false},
+		{Labels{"a": "v1", "A": "v2", "b": "v3"}, false},
+		{Labels{"a": "v1"}, true},
 	}
 	g := NewGroup("test")
 
 	var err error
 	var s *Series
 	for _, d := range data {
-		s, err = NewSeries(y, d.labels)
-		if err != nil {
-			t.Fatalf("%v", err)
-		}
+		s = NewSeries(y, d.labels)
 		if err = g.Add(s); (err != nil) != d.expectError {
 			t.Fatalf("Expected %t error for label %v", d.expectError, d.labels)
 		}
@@ -155,10 +206,7 @@ func TestIndexLabelValues(t *testing.T) {
 	var s *Series
 	var err error
 	for _, l := range labels {
-		s, err = NewSeries(y, l)
-		if err != nil {
-			t.Fatalf("%v", err)
-		}
+		s = NewSeries(y, l)
 		if err = g.Add(s); err != nil {
 			t.Fatalf("%v", err)
 		}
@@ -201,10 +249,7 @@ func TestFilterByLabelValues(t *testing.T) {
 	var s *Series
 	var err error
 	for _, l := range labels {
-		s, err = NewSeries(y, l)
-		if err != nil {
-			t.Fatalf("%v", err)
-		}
+		s = NewSeries(y, l)
 		if err = g.Add(s); err != nil {
 			t.Fatalf("%v", err)
 		}
@@ -248,10 +293,7 @@ func BenchmarkFilterByLabelValues(b *testing.B) {
 	var s *Series
 	var err error
 	for _, l := range labels {
-		s, err = NewSeries(y, l)
-		if err != nil {
-			b.Fatalf("%v", err)
-		}
+		s = NewSeries(y, l)
 		if err = g.Add(s); err != nil {
 			b.Fatalf("%v", err)
 		}
@@ -278,10 +320,7 @@ func BenchmarkIndexLabelValues(b *testing.B) {
 	var s *Series
 	var err error
 	for _, l := range labels {
-		s, err = NewSeries(y, l)
-		if err != nil {
-			b.Fatalf("%v", err)
-		}
+		s = NewSeries(y, l)
 		if err = g.Add(s); err != nil {
 			b.Fatalf("%v", err)
 		}
