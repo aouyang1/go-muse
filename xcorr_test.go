@@ -153,6 +153,132 @@ func TestXCorr(t *testing.T) {
 	}
 }
 
+func TestXCorrWithX(t *testing.T) {
+
+	datasets := []struct {
+		X             []float64
+		Y             []float64
+		Normalize     bool
+		ExpectedXCorr []float64
+		ExpectedIdx   int
+		ExpectedSign  func(float64) bool
+	}{
+		{
+			[]float64{0, 0, 2, 0, 0},
+			[]float64{0, 0, 5, 0, 0},
+			false,
+			[]float64{10, 0, 0, 0, 0},
+			0,
+			isPositive(),
+		},
+		{
+			[]float64{0, 0, 2, 0, 0},
+			[]float64{0, 0, 0, 0, 5},
+			false,
+			[]float64{0, 0, 0, 10, 0},
+			-2,
+			isPositive(),
+		},
+		{
+			[]float64{0, 0, 2, 0, 0},
+			[]float64{5, 0, 0, 0, 0},
+			false,
+			[]float64{0, 0, 10, 0, 0},
+			2,
+			isPositive(),
+		},
+		{
+			[]float64{0, 0, 2, 0, 0},
+			[]float64{0, 0, -5, 0, 0},
+			false,
+			[]float64{-10, 0, 0, 0, 0},
+			0,
+			isNegative(),
+		},
+		{
+			[]float64{0, 0, 2, 0, 0},
+			[]float64{-5, 0, 0, 0, 0},
+			false,
+			[]float64{0, 0, -10, 0, 0},
+			2,
+			isNegative(),
+		},
+		{
+			[]float64{0, 0, 2, 0, 0},
+			[]float64{0, 0, 5, 0, 0},
+			true,
+			[]float64{0.96, -0.24, -0.24, -0.24, -0.24},
+			0,
+			isPositive(),
+		},
+		{
+			[]float64{0, 0, 2, 0, 0},
+			[]float64{0, 0, 0, 0, 5},
+			true,
+			[]float64{-0.24, -0.24, -0.24, 0.96, -0.24},
+			-2,
+			isPositive(),
+		},
+		{
+			[]float64{0, 0, 2, 0, 0},
+			[]float64{5, 0, 0, 0, 0},
+			true,
+			[]float64{-0.24, -0.24, 0.96, -0.24, -0.24},
+			2,
+			isPositive(),
+		},
+		{
+			[]float64{0, 0, 2, 0, 0},
+			[]float64{0, 0, -5, 0, 0},
+			true,
+			[]float64{-0.96, 0.24, 0.24, 0.24, 0.24},
+			0,
+			isNegative(),
+		},
+		{
+			[]float64{0, 0, 2, 0, 0},
+			[]float64{-5, 0, 0, 0, 0},
+			true,
+			[]float64{0.24, 0.24, -0.96, 0.24, 0.24},
+			2,
+			isNegative(),
+		},
+		{
+			[]float64{0, 0, 2, 2, 0},
+			[]float64{3, 3, 3, 3, 3},
+			true,
+			[]float64{0, 0, 0, 0, 0},
+			0,
+			func(x float64) bool { return x == 0 },
+		},
+	}
+
+	for _, ds := range datasets {
+		n := len(ds.X)
+		ft := fourier.NewFFT(n)
+		ref := ZeroPad(ds.X, n)
+		if ds.Normalize {
+			ref = ZNormalize(ref)
+		}
+		refFT := ft.Coefficients(nil, ref)
+
+		xcorr, mi, mv := XCorrWithX(refFT, ds.Y, n, ds.Normalize)
+
+		if !prettyClose(xcorr, ds.ExpectedXCorr) {
+			t.Errorf("Expected cross correlation of %v, but got %v", ds.ExpectedXCorr, xcorr)
+		}
+
+		if mi != ds.ExpectedIdx {
+			t.Errorf("Expected max index to be at %d, but found it at %d", ds.ExpectedIdx, mi)
+		}
+
+		if !ds.ExpectedSign(mv) {
+			t.Errorf("Max value of, %f, sign evaluated to %t", mv, ds.ExpectedSign(mv))
+		}
+
+	}
+}
+
 func TestXCorrBatch(t *testing.T) {
 
 	datasets := []struct {

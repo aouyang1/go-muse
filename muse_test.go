@@ -2,6 +2,8 @@ package muse
 
 import (
 	"testing"
+
+	"github.com/matrix-profile-foundation/go-matrixprofile/siggen"
 )
 
 func TestRunSimple(t *testing.T) {
@@ -149,5 +151,28 @@ func BenchmarkMuseRun(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		g := New(ref, compGroup, NewResults(10, 20, 0))
 		g.Run([]string{"graph"})
+	}
+}
+
+func BenchmarkMuseRunLarge(b *testing.B) {
+	n := 480
+	ref := NewSeries(siggen.Noise(0.1, n), nil)
+
+	compGroup := NewGroup("targets")
+
+	for i := 0; i < 100; i++ {
+		for j := 0; j < 50; j++ {
+			comp := NewSeries(siggen.Noise(0.1, n), Labels{"graph": "graph" + string(i), "host": "host" + string(j)})
+			if err := compGroup.Add(comp); err != nil {
+				b.Fatalf("%v", err)
+			}
+		}
+	}
+
+	Concurrency = 10
+
+	for i := 0; i < b.N; i++ {
+		g := New(ref, compGroup, NewResults(10, 20, 0))
+		g.Run([]string{"host"})
 	}
 }

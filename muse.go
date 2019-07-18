@@ -67,19 +67,11 @@ func (m *Muse) scoreSingle(idx int, refFT []complex128, labelValues Labels, n in
 func (m *Muse) Run(groupByLabels []string) {
 	// Find the next power 2 that's at least twice as long as the the number of values
 	// in the reference time series
-	var N int
-	if m.Reference.Length() > m.Comparison.Length() {
-		N = nextPowOf2(float64(m.Reference.Length()))
-	} else {
-		N = nextPowOf2(float64(m.Comparison.Length()))
-	}
-	if N < 2*m.Reference.Length() {
-		N = nextPowOf2(float64(N + 1))
-	}
+	n := calculateN(m.Reference.Length(), m.Comparison.Length())
 
-	ft := fourier.NewFFT(N)
-	ref := ZeroPad(m.Reference.Values(), N)
-	ref = ZNormalize(ref)
+	ft := fourier.NewFFT(n)
+	ref := ZeroPad(m.Reference.Values(), n)
+	ZNormalize(ref)
 	refFT := ft.Coefficients(nil, ref)
 
 	labelValuesSet := m.Comparison.IndexLabelValues(groupByLabels)
@@ -101,7 +93,7 @@ func (m *Muse) Run(groupByLabels []string) {
 	for _, lv := range labelValuesSet {
 		select {
 		case sem <- struct{}{}:
-			go m.scoreSingle(graphIdx, refFT, lv, N, sem, graphScores)
+			go m.scoreSingle(graphIdx, refFT, lv, n, sem, graphScores)
 			graphIdx++
 		}
 	}
@@ -198,4 +190,17 @@ func (s *Scores) Pop() interface{} {
 	x := (*s)[len(*s)-1]
 	*s = (*s)[:len(*s)-1]
 	return x
+}
+
+func calculateN(refLen, compLen int) int {
+	var n int
+	if refLen > compLen {
+		n = nextPowOf2(float64(refLen))
+	} else {
+		n = nextPowOf2(float64(compLen))
+	}
+	if n < 2*refLen {
+		n = nextPowOf2(float64(n + 1))
+	}
+	return n
 }

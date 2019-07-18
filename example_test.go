@@ -10,6 +10,8 @@ func Example() {
 	sampleRate := 1.0 // once per minute
 	duration := 480.0 // minutes
 
+	// create a reference rectangular time series with an amplitude of 1.5 centered
+	// at 240 minutes and a width of 10 minutes
 	ref := NewSeries(
 		siggen.Add(
 			siggen.Rect(1.5, 240, 10, sampleRate, duration),
@@ -17,6 +19,7 @@ func Example() {
 		), Labels{"graph": "CallTime99Pct", "host": "host1"},
 	)
 
+	// create a comparison group of time series that the reference will query against
 	comp := NewGroup("comparison")
 	comp.Add(
 		ref,
@@ -44,12 +47,16 @@ func Example() {
 	topN := 4        // top 4 grouped series
 	threshold := 0.5 // correlation threshold
 	m := New(ref, comp, NewResults(int(maxLag/sampleRate), topN, threshold))
+
+	// Rank each individual time series in the comparison group
 	m.Run(nil)
 	fmt.Println(m.Results.Fetch())
 
+	// Rank time series grouped by the graph label
 	m.Run([]string{"graph"})
 	fmt.Println(m.Results.Fetch())
 
+	// Rank time series grouped by the host label
 	m.Run([]string{"host"})
 	fmt.Println(m.Results.Fetch())
 
