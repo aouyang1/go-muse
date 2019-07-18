@@ -42,6 +42,8 @@ func main() {
 	sampleRate := 1.0 // once per minute
 	duration := 480.0 // minutes
 
+	// create a reference rectangular time series with an amplitude of 1.5 centered
+	// at 240 minutes and a width of 10 minutes
 	ref := NewSeries(
 		siggen.Add(
 			siggen.Rect(1.5, 240, 10, sampleRate, duration),
@@ -49,6 +51,7 @@ func main() {
 		), Labels{"graph": "CallTime99Pct", "host": "host1"},
 	)
 
+	// create a comparison group of time series that the reference will query against
 	comp := NewGroup("comparison")
 	comp.Add(
 		ref,
@@ -76,12 +79,16 @@ func main() {
 	topN := 4        // top 4 grouped series
 	threshold := 0.5 // correlation threshold
 	m := New(ref, comp, NewResults(int(maxLag/sampleRate), topN, threshold))
+
+	// Rank each individual time series in the comparison group
 	m.Run(nil)
 	fmt.Println(m.Results.Fetch())
 
+	// Rank time series grouped by the graph label
 	m.Run([]string{"graph"})
 	fmt.Println(m.Results.Fetch())
 
+	// Rank time series grouped by the host label
 	m.Run([]string{"host"})
 	fmt.Println(m.Results.Fetch())
 }
@@ -94,21 +101,18 @@ $ go run example_test.go
 ```
 
 ## Benchmarks
-Benchmark name                      | NumReps |    Time/Rep    |  Memory/Rep  |     Alloc/Rep   |
------------------------------------:|--------:|---------------:|-------------:|----------------:|
-BenchmarkMuseRun-4                  |    30000|     38153 ns/op|    12474 B/op|    128 allocs/op| 
-BenchmarkFilterByLabelValues-4      |  3000000|       428 ns/op|      128 B/op|      5 allocs/op|
-BenchmarkIndexLabelValues-4         |   500000|      2308 ns/op|     1912 B/op|     29 allocs/op|
-BenchmarkZNormalize-4               | 20000000|      79.5 ns/op|       32 B/op|      1 allocs/op|
-BenchmarkFFT-4                      |     1000|   2126129 ns/op|   139952 B/op|      1 allocs/op|
-BenchmarkIFFT-4                     |     1000|   2124888 ns/op|   140091 B/op|      1 allocs/op|
-BenchmarkXCorr-4                    |      300|   5693070 ns/op|  2655136 B/op|      9 allocs/op|
-BenchmarkXCorrNormalize-4           |      200|   6084858 ns/op|  3179888 B/op|     11 allocs/op|
-BenchmarkXCorrWithXNormalize-4      |      300|   4310948 ns/op|  2390070 B/op|      8 allocs/op|
-BenchmarkXCorrBatchNormalizex1-4    |      200|   6146877 ns/op|  2917792 B/op|     13 allocs/op|
-BenchmarkXCorrBatchNormalizex10-4   |       30|  39082018 ns/op| 14943725 B/op|     58 allocs/op|
+Benchmark name                      | NumReps |    Time/Rep    |   Memory/Rep  |     Alloc/Rep   |
+-----------------------------------:|--------:|---------------:|--------------:|----------------:|
+BenchmarkMuseRun-4                  |    30000|     38153 ns/op|     12474 B/op|    128 allocs/op| 
+BenchmarkMuseRunLarge-4             |        5| 255166080 ns/op| 393215803 B/op|  64863 allocs/op|
+BenchmarkFilterByLabelValues-4      |  3000000|       428 ns/op|       128 B/op|      5 allocs/op|
+BenchmarkIndexLabelValues-4         |   500000|      2308 ns/op|      1912 B/op|     29 allocs/op|
+BenchmarkZNormalize-4               | 20000000|      79.5 ns/op|        32 B/op|      1 allocs/op|
+BenchmarkXCorr-4                    |      300|   5693070 ns/op|   2655136 B/op|      9 allocs/op|
+BenchmarkXCorrNormalize-4           |      200|   6084858 ns/op|   3179888 B/op|     11 allocs/op|
+BenchmarkXCorrWithXNormalize-4      |      300|   4310948 ns/op|   2390070 B/op|      8 allocs/op|
 
-Ran on a 2018 MacBookAir on Jul 16, 2019
+Ran on a 2018 MacBookAir on Jul 18, 2019
 ```sh
     Processor: 1.6 GHz Intel Core i5
        Memory: 8GB 2133 MHz LPDDR3

@@ -42,16 +42,6 @@ func Mult(x []complex128, y []complex128) []complex128 {
 	return out
 }
 
-// Abs computes the magnitude of a slice of complex values
-func Abs(x []complex128) []float64 {
-	out := make([]float64, len(x))
-	for i, v := range x {
-		out[i] = cmplx.Abs(v)
-	}
-
-	return out
-}
-
 // MaxAbsIndex finds the index with the largest absolute value
 func MaxAbsIndex(x []float64) int {
 	var maxIndex int
@@ -171,87 +161,6 @@ func XCorrWithX(X []complex128, y []float64, n int, normalize bool) ([]float64, 
 
 	if mi > n/2 {
 		mi = mi - n
-	}
-
-	return cc, mi, mv
-
-}
-
-func XCorrBatch(x []float64, yBatch [][]float64, n int, normalize bool) ([][]float64, []int, []float64) {
-	// Negative lag means y is lagging behind x. Earliest timepoint is at index 0
-
-	if normalize {
-		meanX := floats.Sum(x) / float64(len(x))
-		floats.AddConst(-meanX, x)
-	}
-
-	var minN int
-	minN = len(x)
-	for i := 0; i < len(yBatch); i++ {
-		if len(yBatch[i]) < minN {
-			minN = len(yBatch[i])
-		}
-	}
-	if n < minN {
-		n = minN
-	}
-
-	x = ZeroPad(x, n)
-
-	var weights []float64
-	if normalize {
-		weights = make([]float64, n) // this will be reused in each y
-		for i := 0; i < n; i++ {
-			weights[i] = float64(n)
-		}
-
-		stdX := stat.StdDev(x, weights)
-
-		if stdX != 0 {
-			floats.Scale(1.0/stdX, x)
-		}
-	}
-
-	ft := fourier.NewFFT(n)
-
-	X := ft.Coefficients(nil, x)
-
-	var meanY, stdY float64
-	var crossCorr []float64
-	var maxi int
-	var maxv float64
-	cc := make([][]float64, 0, len(yBatch))
-	mi := make([]int, 0, len(yBatch))
-	mv := make([]float64, 0, len(yBatch))
-	for _, y := range yBatch {
-		if normalize {
-			meanY = floats.Sum(y) / float64(len(y))
-			floats.AddConst(-meanY, y)
-		}
-		y = ZeroPad(y, n)
-		if normalize {
-			stdY = stat.StdDev(y, weights)
-			if stdY != 0 {
-				floats.Scale(1.0/stdY, y)
-			}
-		}
-
-		crossCorr = ft.Sequence(nil, Mult(X, Conj(ft.Coefficients(nil, y))))
-		if normalize {
-			floats.Scale(1.0/float64(n*n), crossCorr)
-		} else {
-			floats.Scale(1.0/float64(n), crossCorr)
-		}
-
-		maxi = MaxAbsIndex(crossCorr)
-		maxv = crossCorr[maxi]
-		if maxi > n/2 {
-			maxi = maxi - n
-		}
-
-		cc = append(cc, crossCorr)
-		mi = append(mi, maxi)
-		mv = append(mv, maxv)
 	}
 
 	return cc, mi, mv
