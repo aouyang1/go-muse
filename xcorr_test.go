@@ -278,6 +278,14 @@ func TestXCorrWithX(t *testing.T) {
 
 	}
 }
+
+func BenchmarkZPad(b *testing.B) {
+	x := []float64{1, 2, 3, 4}
+	for i := 0; i < b.N; i++ {
+		zeroPad(x, 10)
+	}
+}
+
 func BenchmarkZNormalize(b *testing.B) {
 	x := []float64{1, 2, 3, 4}
 	for i := 0; i < b.N; i++ {
@@ -310,6 +318,17 @@ func BenchmarkXCorrNormalize(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		xCorr(x, y, n, true)
+	}
+}
+
+func BenchmarkXCorrWithX(b *testing.B) {
+	x, y, n := setupXCorrData()
+
+	ft := fourier.NewFFT(n)
+	X := ft.Coefficients(nil, zeroPad(x, n))
+
+	for i := 0; i < b.N; i++ {
+		xCorrWithX(X, y, n, false)
 	}
 }
 

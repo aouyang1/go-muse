@@ -29,19 +29,6 @@ func prettyClose(a, b []float64) bool {
 	return true
 }
 
-// mult multiplies two slices element by element
-func mult(x []complex128, y []complex128) []complex128 {
-	if len(x) != len(y) {
-		panic(fmt.Sprintf("Non equivalent length of slices, x: %d, y: %d", len(x), len(y)))
-	}
-	out := make([]complex128, len(x))
-	for i, v := range x {
-		out[i] = v * y[i]
-	}
-
-	return out
-}
-
 // maxAbsIndex finds the index with the largest absolute value
 func maxAbsIndex(x []float64) int {
 	var maxIndex int
@@ -56,14 +43,21 @@ func maxAbsIndex(x []float64) int {
 	return maxIndex
 }
 
-// conj returns the complex conjugate of a slice of complex values
-func conj(x []complex128) []complex128 {
-	out := make([]complex128, len(x))
-	for i, v := range x {
-		out[i] = cmplx.Conj(v)
+// mult multiplies two slices element by element saving in the dst slice
+func mult(dst, src []complex128) {
+	if len(dst) != len(src) {
+		panic(fmt.Sprintf("Non equivalent length of slices, x: %d, y: %d", len(dst), len(src)))
 	}
+	for i, v := range dst {
+		dst[i] = v * src[i]
+	}
+}
 
-	return out
+// conj changes the input into the complex conjugate of a slice of complex values
+func conj(x []complex128) {
+	for i, v := range x {
+		x[i] = cmplx.Conj(v)
+	}
 }
 
 // zeroPad re-slices the input array to a size n leaving trailing zeroes
@@ -82,19 +76,13 @@ func zeroPad(x []float64, n int) []float64 {
 // zNormalize removes the mean and divides each value by the standard
 // deviation of the resulting series
 func zNormalize(x []float64) []float64 {
-	meanX := floats.Sum(x) / float64(len(x))
+	n := float64(len(x))
+	floats.AddConst(-floats.Sum(x)/n, x)
 
-	floats.AddConst(-meanX, x)
-
-	weights := make([]float64, len(x))
-	for i := 0; i < len(x); i++ {
-		weights[i] = float64(len(x))
-	}
-
-	stdX := stat.StdDev(x, weights)
+	stdX := stat.StdDev(x, nil)
 
 	if stdX != 0 {
-		floats.Scale(1.0/stdX, x)
+		floats.Scale(math.Sqrt((n*n-1)/(n*n-n))/stdX, x)
 	}
 
 	return x
@@ -121,7 +109,11 @@ func xCorr(x []float64, y []float64, n int, normalize bool) ([]float64, int, flo
 
 	ft := fourier.NewFFT(n)
 
-	cc := ft.Sequence(nil, mult(ft.Coefficients(nil, x), conj(ft.Coefficients(nil, y))))
+	X := ft.Coefficients(nil, x)
+	Y := ft.Coefficients(nil, y)
+	conj(Y)
+	mult(X, Y)
+	cc := ft.Sequence(nil, X)
 	if normalize {
 		floats.Scale(1.0/float64(n*n), cc)
 	} else {
@@ -149,7 +141,10 @@ func xCorrWithX(X []complex128, y []float64, n int, normalize bool) ([]float64, 
 	}
 
 	ft := fourier.NewFFT(n)
-	cc := ft.Sequence(nil, mult(X, conj(ft.Coefficients(nil, y))))
+	C := ft.Coefficients(nil, y)
+	conj(C)
+	mult(C, X)
+	cc := ft.Sequence(nil, C)
 	if normalize {
 		floats.Scale(1.0/float64(n*n), cc)
 	} else {

@@ -70,7 +70,9 @@ func (m *Muse) Run(groupByLabels []string) {
 	n := calculateN(m.Reference.Length(), m.Comparison.Length())
 
 	ft := fourier.NewFFT(n)
-	refFT := ft.Coefficients(nil, zNormalize(zeroPad(m.Reference.Values(), n)))
+	ref := zeroPad(m.Reference.Values(), n)
+	zNormalize(ref)
+	refFT := ft.Coefficients(nil, ref)
 
 	labelValuesSet := m.Comparison.indexLabelValues(groupByLabels)
 
