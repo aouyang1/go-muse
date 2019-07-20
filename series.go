@@ -76,17 +76,6 @@ func (s *Series) Values() []float64 {
 	return s.y
 }
 
-// GetLabelValue returns whether the label name exists in the timeseries labels
-// and returns the value if present
-func (s *Series) GetLabelValue(label string) (bool, string) {
-	for k, v := range s.labels {
-		if k == label {
-			return true, v
-		}
-	}
-	return false, ""
-}
-
 // Labels returns the map of label to values for the timeseries
 func (s *Series) Labels() Labels {
 	return s.labels
