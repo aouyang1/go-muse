@@ -29,8 +29,8 @@ func prettyClose(a, b []float64) bool {
 	return true
 }
 
-// Mult multiplies two slices element by element
-func Mult(x []complex128, y []complex128) []complex128 {
+// mult multiplies two slices element by element
+func mult(x []complex128, y []complex128) []complex128 {
 	if len(x) != len(y) {
 		panic(fmt.Sprintf("Non equivalent length of slices, x: %d, y: %d", len(x), len(y)))
 	}
@@ -42,8 +42,8 @@ func Mult(x []complex128, y []complex128) []complex128 {
 	return out
 }
 
-// MaxAbsIndex finds the index with the largest absolute value
-func MaxAbsIndex(x []float64) int {
+// maxAbsIndex finds the index with the largest absolute value
+func maxAbsIndex(x []float64) int {
 	var maxIndex int
 	var maxVal float64
 	for i, v := range x {
@@ -56,8 +56,8 @@ func MaxAbsIndex(x []float64) int {
 	return maxIndex
 }
 
-// Conj returns the complex conjugate of a slice of complex values
-func Conj(x []complex128) []complex128 {
+// conj returns the complex conjugate of a slice of complex values
+func conj(x []complex128) []complex128 {
 	out := make([]complex128, len(x))
 	for i, v := range x {
 		out[i] = cmplx.Conj(v)
@@ -66,8 +66,8 @@ func Conj(x []complex128) []complex128 {
 	return out
 }
 
-// ZeroPad re-slices the input array to a size n leaving trailing zeroes
-func ZeroPad(x []float64, n int) []float64 {
+// zeroPad re-slices the input array to a size n leaving trailing zeroes
+func zeroPad(x []float64, n int) []float64 {
 	if n < len(x) {
 		return x
 	}
@@ -79,9 +79,9 @@ func ZeroPad(x []float64, n int) []float64 {
 	return xpad
 }
 
-// ZNormalize removes the mean and divides each value by the standard
+// zNormalize removes the mean and divides each value by the standard
 // deviation of the resulting series
-func ZNormalize(x []float64) []float64 {
+func zNormalize(x []float64) []float64 {
 	meanX := floats.Sum(x) / float64(len(x))
 
 	floats.AddConst(-meanX, x)
@@ -100,35 +100,35 @@ func ZNormalize(x []float64) []float64 {
 	return x
 }
 
-// XCorr computes the cross correlation slice between x and y, index of the maximum absolute value
+// xCorr computes the cross correlation slice between x and y, index of the maximum absolute value
 // and the maximum absolute value. You can specify number of samples to truncate both x and y slices
 // or zero pad the two slices. The normalize flag will normalize both x and y slices to their own
 // signal power. The resulting maximum absolute values will range from 0-1 for normalized, but not
 // necessarily for non-normalized computations.
-func XCorr(x []float64, y []float64, n int, normalize bool) ([]float64, int, float64) {
+func xCorr(x []float64, y []float64, n int, normalize bool) ([]float64, int, float64) {
 	// Negative lag means y is lagging behind x. Earliest timepoint is at index 0
 	if minN := int(math.Max(float64(len(x)), float64(len(y)))); n < minN {
 		n = minN
 	}
 
-	x = ZeroPad(x, n)
-	y = ZeroPad(y, n)
+	x = zeroPad(x, n)
+	y = zeroPad(y, n)
 
 	if normalize {
-		x = ZNormalize(x)
-		y = ZNormalize(y)
+		x = zNormalize(x)
+		y = zNormalize(y)
 	}
 
 	ft := fourier.NewFFT(n)
 
-	cc := ft.Sequence(nil, Mult(ft.Coefficients(nil, x), Conj(ft.Coefficients(nil, y))))
+	cc := ft.Sequence(nil, mult(ft.Coefficients(nil, x), conj(ft.Coefficients(nil, y))))
 	if normalize {
 		floats.Scale(1.0/float64(n*n), cc)
 	} else {
 		floats.Scale(1.0/float64(n), cc)
 	}
 
-	mi := MaxAbsIndex(cc)
+	mi := maxAbsIndex(cc)
 	mv := cc[mi]
 
 	if mi > n/2 {
@@ -138,25 +138,25 @@ func XCorr(x []float64, y []float64, n int, normalize bool) ([]float64, int, flo
 	return cc, mi, mv
 }
 
-// XCorrWithX allows a precomputed FFT of X to be passed in for the purposes of batch
+// xCorrWithX allows a precomputed FFT of X to be passed in for the purposes of batch
 // execution and not repeatedly calculating FFT(x). Must pass in the fourier transform
 // struct used to compute X.
-func XCorrWithX(X []complex128, y []float64, n int, normalize bool) ([]float64, int, float64) {
-	y = ZeroPad(y, n)
+func xCorrWithX(X []complex128, y []float64, n int, normalize bool) ([]float64, int, float64) {
+	y = zeroPad(y, n)
 
 	if normalize {
-		y = ZNormalize(y)
+		y = zNormalize(y)
 	}
 
 	ft := fourier.NewFFT(n)
-	cc := ft.Sequence(nil, Mult(X, Conj(ft.Coefficients(nil, y))))
+	cc := ft.Sequence(nil, mult(X, conj(ft.Coefficients(nil, y))))
 	if normalize {
 		floats.Scale(1.0/float64(n*n), cc)
 	} else {
 		floats.Scale(1.0/float64(n), cc)
 	}
 
-	mi := MaxAbsIndex(cc)
+	mi := maxAbsIndex(cc)
 	mv := cc[mi]
 
 	if mi > n/2 {

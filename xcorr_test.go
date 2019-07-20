@@ -136,7 +136,7 @@ func TestXCorr(t *testing.T) {
 	}
 
 	for _, ds := range datasets {
-		xcorr, mi, mv := XCorr(ds.X, ds.Y, len(ds.X), ds.Normalize)
+		xcorr, mi, mv := xCorr(ds.X, ds.Y, len(ds.X), ds.Normalize)
 
 		if !prettyClose(xcorr, ds.ExpectedXCorr) {
 			t.Errorf("Expected cross correlation of %v, but got %v", ds.ExpectedXCorr, xcorr)
@@ -256,13 +256,13 @@ func TestXCorrWithX(t *testing.T) {
 	for _, ds := range datasets {
 		n := len(ds.X)
 		ft := fourier.NewFFT(n)
-		ref := ZeroPad(ds.X, n)
+		ref := zeroPad(ds.X, n)
 		if ds.Normalize {
-			ref = ZNormalize(ref)
+			ref = zNormalize(ref)
 		}
 		refFT := ft.Coefficients(nil, ref)
 
-		xcorr, mi, mv := XCorrWithX(refFT, ds.Y, n, ds.Normalize)
+		xcorr, mi, mv := xCorrWithX(refFT, ds.Y, n, ds.Normalize)
 
 		if !prettyClose(xcorr, ds.ExpectedXCorr) {
 			t.Errorf("Expected cross correlation of %v, but got %v", ds.ExpectedXCorr, xcorr)
@@ -281,7 +281,7 @@ func TestXCorrWithX(t *testing.T) {
 func BenchmarkZNormalize(b *testing.B) {
 	x := []float64{1, 2, 3, 4}
 	for i := 0; i < b.N; i++ {
-		ZNormalize(x)
+		zNormalize(x)
 	}
 }
 
@@ -301,7 +301,7 @@ func BenchmarkXCorr(b *testing.B) {
 	x, y, n := setupXCorrData()
 
 	for i := 0; i < b.N; i++ {
-		XCorr(x, y, n, false)
+		xCorr(x, y, n, false)
 	}
 }
 
@@ -309,7 +309,7 @@ func BenchmarkXCorrNormalize(b *testing.B) {
 	x, y, n := setupXCorrData()
 
 	for i := 0; i < b.N; i++ {
-		XCorr(x, y, n, true)
+		xCorr(x, y, n, true)
 	}
 }
 
@@ -317,9 +317,9 @@ func BenchmarkXCorrWithXNormalize(b *testing.B) {
 	x, y, n := setupXCorrData()
 
 	ft := fourier.NewFFT(n)
-	X := ft.Coefficients(nil, ZNormalize(ZeroPad(x, n)))
+	X := ft.Coefficients(nil, zNormalize(zeroPad(x, n)))
 
 	for i := 0; i < b.N; i++ {
-		XCorrWithX(X, y, n, true)
+		xCorrWithX(X, y, n, true)
 	}
 }

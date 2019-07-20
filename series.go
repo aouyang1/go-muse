@@ -166,10 +166,10 @@ func (g *Group) FilterByLabelValues(labels Labels) []*Series {
 	return filteredSeries
 }
 
-// IndexLabelValues return a slice of all the distinct combinations of the
+// indexLabelValues return a slice of all the distinct combinations of the
 // input label values while ignoring labels not being specified. If no labels
 // are specified then each series will be treated separately.
-func (g *Group) IndexLabelValues(groupByLabels []string) []Labels {
+func (g *Group) indexLabelValues(groupByLabels []string) []Labels {
 	var distinctLabelValues []Labels
 	var guid string
 

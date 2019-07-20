@@ -227,7 +227,7 @@ func TestIndexLabelValues(t *testing.T) {
 
 	var dl []Labels
 	for _, p := range testParams {
-		dl = g.IndexLabelValues(p.labelNames)
+		dl = g.indexLabelValues(p.labelNames)
 		if len(dl) != p.expectedNumLabels {
 			t.Fatalf("Expected %d distinct labels grouped by %v, but got %d", p.expectedNumLabels, p.labelNames, len(dl))
 		}
@@ -270,7 +270,7 @@ func TestFilterByLabelValues(t *testing.T) {
 
 	var series []*Series
 	for _, p := range testParams {
-		g.IndexLabelValues(p.labels.Keys())
+		g.indexLabelValues(p.labels.Keys())
 		series = g.FilterByLabelValues(p.labels)
 		if len(series) != p.expectedNumSeries {
 			t.Fatalf("Expected %d series filtered by %v, but got %d", p.expectedNumSeries, p.labels, len(series))
@@ -299,7 +299,7 @@ func BenchmarkFilterByLabelValues(b *testing.B) {
 		}
 	}
 
-	g.IndexLabelValues([]string{"graph"})
+	g.indexLabelValues([]string{"graph"})
 	for i := 0; i < b.N; i++ {
 		g.FilterByLabelValues(Labels{"graph": "graph1"})
 	}
@@ -327,6 +327,6 @@ func BenchmarkIndexLabelValues(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		g.IndexLabelValues([]string{"graph"})
+		g.indexLabelValues([]string{"graph"})
 	}
 }

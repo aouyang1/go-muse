@@ -43,7 +43,7 @@ func (m *Muse) scoreSingle(idx int, refFT []complex128, labelValues Labels, n in
 		// comparison time series. boolean value specifies that we are normalizing
 		// the the time series so that the power of of the reference and comparison
 		// is equivalent. output value will range between 0 and 1 due to normalizing
-		_, lag, maxVal = XCorrWithX(refFT, compTs.Values(), n, true)
+		_, lag, maxVal = xCorrWithX(refFT, compTs.Values(), n, true)
 		compScore = Score{
 			Labels:       compTs.Labels(),
 			Lag:          lag,
@@ -70,11 +70,9 @@ func (m *Muse) Run(groupByLabels []string) {
 	n := calculateN(m.Reference.Length(), m.Comparison.Length())
 
 	ft := fourier.NewFFT(n)
-	ref := ZeroPad(m.Reference.Values(), n)
-	ZNormalize(ref)
-	refFT := ft.Coefficients(nil, ref)
+	refFT := ft.Coefficients(nil, zNormalize(zeroPad(m.Reference.Values(), n)))
 
-	labelValuesSet := m.Comparison.IndexLabelValues(groupByLabels)
+	labelValuesSet := m.Comparison.indexLabelValues(groupByLabels)
 
 	// Slice of score channels will handle the output of the concurrent cross correlation
 	// comparison
