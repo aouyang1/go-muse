@@ -59,9 +59,4 @@ func Example() {
 	// Rank time series grouped by the host label
 	m.Run([]string{"host"})
 	fmt.Println(m.Results.Fetch())
-
-	// Output:
-	// [{map[graph:CallTime99Pct host:host2] -3 82} {map[graph:ErrorRate host:host1] 0 99} {map[graph:CallTime99Pct host:host1] 0 100}] 93.66666666666667
-	// [{map[graph:ErrorRate host:host1] 0 99} {map[graph:CallTime99Pct host:host1] 0 100}] 99.5
-	// [{map[graph:CallTime99Pct host:host2] -3 82} {map[graph:CallTime99Pct host:host1] 0 100}] 91
 }
