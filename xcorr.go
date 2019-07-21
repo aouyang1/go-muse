@@ -68,7 +68,7 @@ func zeroPad(x []float64, n int) []float64 {
 
 	xpad := make([]float64, n)
 	for i := 0; i < len(x); i++ {
-		xpad[i] = x[i]
+		xpad[n-len(x)+i] = x[i]
 	}
 	return xpad
 }

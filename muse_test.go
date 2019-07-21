@@ -109,9 +109,9 @@ func TestRunWithLargerGroup(t *testing.T) {
 	}
 
 	expectedScores := Scores{
-		Score{Labels: map[string]string{"graph": "evenLower"}, Lag: -4, PercentScore: 82},
-		Score{Labels: map[string]string{"graph": "slightlyLower"}, Lag: -7, PercentScore: 93},
-		Score{Labels: map[string]string{"graph": "perfectMatch"}, Lag: -7, PercentScore: 100},
+		Score{Labels: map[string]string{"graph": "evenLower"}, Lag: 4, PercentScore: 82},
+		Score{Labels: map[string]string{"graph": "slightlyLower"}, Lag: 1, PercentScore: 93},
+		Score{Labels: map[string]string{"graph": "perfectMatch"}, Lag: 1, PercentScore: 100},
 	}
 
 	compGroup := NewGroup("targets")

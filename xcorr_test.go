@@ -35,6 +35,29 @@ func TestNextPowOf2(t *testing.T) {
 	}
 }
 
+func TestZeroPad(t *testing.T) {
+	dataset := []struct {
+		x         []float64
+		n         int
+		expectedx []float64
+	}{
+		{[]float64{1, 2, 3, 4}, 6, []float64{0, 0, 1, 2, 3, 4}},
+		{[]float64{1, 2, 3, 4}, 3, []float64{1, 2, 3, 4}},
+		{[]float64{1, 2, 3, 4}, 4, []float64{1, 2, 3, 4}},
+	}
+
+	for _, d := range dataset {
+		zpadx := zeroPad(d.x, d.n)
+		if len(zpadx) != len(d.expectedx) {
+			t.Fatalf("Expected length %d, but got length %d", len(d.expectedx), len(zpadx))
+		}
+		for i, v := range zpadx {
+			if d.expectedx[i] != v {
+				t.Fatalf("Expected value %v, but got %v", d.expectedx[i], v)
+			}
+		}
+	}
+}
 func TestXCorr(t *testing.T) {
 
 	datasets := []struct {
