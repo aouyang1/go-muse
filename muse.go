@@ -34,6 +34,7 @@ func (m *Muse) scoreSingle(idx int, refFT []complex128, labelValues Labels, n in
 	var lag int
 
 	maxScore := Score{}
+	ft := fourier.NewFFT(n)
 
 	compGraphs := m.Comparison.FilterByLabelValues(labelValues)
 	// for each time series, store the time series with highest relationship
@@ -43,7 +44,7 @@ func (m *Muse) scoreSingle(idx int, refFT []complex128, labelValues Labels, n in
 		// comparison time series. boolean value specifies that we are normalizing
 		// the the time series so that the power of of the reference and comparison
 		// is equivalent. output value will range between 0 and 1 due to normalizing
-		_, lag, maxVal = xCorrWithX(refFT, compTs.Values(), n, true)
+		_, lag, maxVal = xCorrWithX(refFT, compTs.Values(), ft, n, true)
 		compScore = Score{
 			Labels:       compTs.Labels(),
 			Lag:          lag,
