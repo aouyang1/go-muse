@@ -103,18 +103,18 @@ $ go run example_test.go
 ## Benchmarks
 Benchmark name                      | NumReps |    Time/Rep    |   Memory/Rep  |     Alloc/Rep   |
 -----------------------------------:|--------:|---------------:|--------------:|----------------:|
-BenchmarkMuseRun-4                  |    50000|     38666 ns/op|      9850 B/op|    109 allocs/op| 
-BenchmarkMuseRunLarge-4             |        5| 243944542 ns/op| 257528616 B/op|  49867 allocs/op|
+BenchmarkMuseRun-4                  |    30000|     40344 ns/op|      9465 B/op|    107 allocs/op| 
+BenchmarkMuseRunLarge-4             |        5| 201152104 ns/op| 135877486 B/op|  39965 allocs/op|
 BenchmarkFilterByLabelValues-4      |  3000000|       446 ns/op|       128 B/op|      5 allocs/op|
 BenchmarkIndexLabelValues-4         |   500000|      2513 ns/op|      1912 B/op|     29 allocs/op|
 BenchmarkZPad-4                     | 30000000|      40.8 ns/op|        80 B/op|      1 allocs/op|
 BenchmarkZNormalize-4               | 20000000|      63.4 ns/op|         0 B/op|      0 allocs/op|
-BenchmarkXCorr-4                    |      200|   5804920 ns/op|   2114928 B/op|      7 allocs/op|
-BenchmarkXCorrNormalize-4           |      200|   6024089 ns/op|   2114928 B/op|      7 allocs/op|
-BenchmarkXCorrWithX-4               |      300|   4207473 ns/op|   1586380 B/op|      5 allocs/op|
-BenchmarkXCorrWithXNormalize-4      |      300|   4293274 ns/op|   1586380 B/op|      5 allocs/op|
+BenchmarkXCorr-4                    |      300|   5651196 ns/op|   2114464 B/op|      7 allocs/op|
+BenchmarkXCorrNormalize-4           |      300|   5863611 ns/op|   2114465 B/op|      7 allocs/op|
+BenchmarkXCorrWithX-4               |      500|   3508246 ns/op|    799391 B/op|      3 allocs/op|
+BenchmarkXCorrWithXNormalize-4      |      500|   3690897 ns/op|    799391 B/op|      3 allocs/op|
 
-Ran on a 2018 MacBookAir on Jul 20, 2019
+Ran on a 2018 MacBookAir on Jul 21, 2019
 ```sh
     Processor: 1.6 GHz Intel Core i5
        Memory: 8GB 2133 MHz LPDDR3
