@@ -28,7 +28,7 @@ func New(ref *Series, comp *Group, results *Results) *Muse {
 
 // scoreSingle calculates the highest score for a single set of label values given
 // a reference time series
-func (m *Muse) scoreSingle(idx int, refFT []complex128, labelValues Labels, n int, sem chan struct{}, graphScores []chan Score) {
+func (m *Muse) scoreSingle(idx int, refFT []complex128, labelValues *Labels, n int, sem chan struct{}, graphScores []chan Score) {
 	var compScore Score
 	var maxVal float64
 	var lag int
@@ -44,7 +44,7 @@ func (m *Muse) scoreSingle(idx int, refFT []complex128, labelValues Labels, n in
 		// comparison time series. boolean value specifies that we are normalizing
 		// the the time series so that the power of of the reference and comparison
 		// is equivalent. output value will range between 0 and 1 due to normalizing
-		_, lag, maxVal = xCorrWithX(refFT, compTs.Values(), ft, n, true)
+		_, lag, maxVal = xCorrWithX(refFT, compTs.Values(), ft)
 		compScore = Score{
 			Labels:       compTs.Labels(),
 			Lag:          lag,
@@ -71,9 +71,7 @@ func (m *Muse) Run(groupByLabels []string) {
 	n := calculateN(m.Reference.Length(), m.Comparison.Length())
 
 	ft := fourier.NewFFT(n)
-	ref := zeroPad(m.Reference.Values(), n)
-	zNormalize(ref)
-	refFT := ft.Coefficients(nil, ref)
+	refFT := ft.Coefficients(nil, zNormalize(zeroPad(m.Reference.Values(), n)))
 
 	labelValuesSet := m.Comparison.indexLabelValues(groupByLabels)
 
@@ -164,9 +162,9 @@ type Scores []Score
 
 // Score keeps track of the cross correlation score and the related series
 type Score struct {
-	Labels       Labels `json:"labels"`
-	Lag          int    `json:"lag"`
-	PercentScore int    `json:"percentScore"`
+	Labels       *Labels `json:"labels"`
+	Lag          int     `json:"lag"`
+	PercentScore int     `json:"percentScore"`
 }
 
 func (s Scores) Len() int {

@@ -48,7 +48,7 @@ func main() {
 		siggen.Add(
 			siggen.Rect(1.5, 240, 10, sampleRate, duration),
 			siggen.Noise(0.1, int(sampleRate*duration)),
-		), Labels{"graph": "CallTime99Pct", "host": "host1"},
+		), NewLabels(LabelMap{"graph": "CallTime99Pct", "host": "host1"}),
 	)
 
 	// create a comparison group of time series that the reference will query against
@@ -59,19 +59,19 @@ func main() {
 			siggen.Add(
 				siggen.Rect(1.5, 242, 7, sampleRate, duration),
 				siggen.Noise(0.1, int(sampleRate*duration)),
-			), Labels{"graph": "CallTime99Pct", "host": "host2"},
+			), NewLabels(LabelMap{"graph": "CallTime99Pct", "host": "host2"}),
 		),
 		NewSeries(
 			siggen.Add(
 				siggen.Rect(43, 240, 10, sampleRate, duration),
 				siggen.Noise(0.1, int(sampleRate*duration)),
-			), Labels{"graph": "ErrorRate", "host": "host1"},
+			), NewLabels(LabelMap{"graph": "ErrorRate", "host": "host1"}),
 		),
 		NewSeries(
 			siggen.Add(
 				siggen.Line(0, 0.1, int(sampleRate*duration)),
 				siggen.Noise(0.1, int(sampleRate*duration)),
-			), Labels{"graph": "ErrorRate", "host": "host2"},
+			), NewLabels(LabelMap{"graph": "ErrorRate", "host": "host2"}),
 		),
 	)
 
@@ -103,16 +103,14 @@ $ go run example_test.go
 ## Benchmarks
 Benchmark name                      | NumReps |    Time/Rep    |   Memory/Rep  |     Alloc/Rep   |
 -----------------------------------:|--------:|---------------:|--------------:|----------------:|
-BenchmarkMuseRun-4                  |    30000|     40344 ns/op|      9465 B/op|    107 allocs/op| 
-BenchmarkMuseRunLarge-4             |        5| 201152104 ns/op| 135877486 B/op|  39965 allocs/op|
-BenchmarkFilterByLabelValues-4      |  3000000|       446 ns/op|       128 B/op|      5 allocs/op|
-BenchmarkIndexLabelValues-4         |   500000|      2513 ns/op|      1912 B/op|     29 allocs/op|
+BenchmarkMuseRun-4                  |    50000|     37319 ns/op|      9626 B/op|    112 allocs/op| 
+BenchmarkMuseRunLarge-4             |       10| 184963980 ns/op| 133454180 B/op|  32001 allocs/op|
+BenchmarkFilterByLabelValues-4      |  2000000|       569 ns/op|       496 B/op|      8 allocs/op|
+BenchmarkIndexLabelValues-4         |   500000|      2709 ns/op|      2152 B/op|     38 allocs/op|
 BenchmarkZPad-4                     | 30000000|      40.8 ns/op|        80 B/op|      1 allocs/op|
 BenchmarkZNormalize-4               | 20000000|      63.4 ns/op|         0 B/op|      0 allocs/op|
 BenchmarkXCorr-4                    |      300|   5651196 ns/op|   2114464 B/op|      7 allocs/op|
-BenchmarkXCorrNormalize-4           |      300|   5863611 ns/op|   2114465 B/op|      7 allocs/op|
 BenchmarkXCorrWithX-4               |      500|   3508246 ns/op|    799391 B/op|      3 allocs/op|
-BenchmarkXCorrWithXNormalize-4      |      500|   3690897 ns/op|    799391 B/op|      3 allocs/op|
 
 Ran on a 2018 MacBookAir on Jul 21, 2019
 ```sh

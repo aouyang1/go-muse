@@ -4,14 +4,14 @@ import "testing"
 
 func TestGroupAdd(t *testing.T) {
 	data := []struct {
-		labels      Labels
+		labels      *Labels
 		expectError bool
 	}{
-		{Labels{"a": "v1"}, false},
-		{Labels{"a": "v2"}, false},
-		{Labels{"a": "v1", "c": "v2", "b": "v3"}, false},
-		{Labels{"a": "v1", "A": "v2", "b": "v3"}, false},
-		{Labels{"a": "v1"}, true},
+		{NewLabels(LabelMap{"a": "v1"}), false},
+		{NewLabels(LabelMap{"a": "v2"}), false},
+		{NewLabels(LabelMap{"a": "v1", "c": "v2", "b": "v3"}), false},
+		{NewLabels(LabelMap{"a": "v1", "A": "v2", "b": "v3"}), false},
+		{NewLabels(LabelMap{"a": "v1"}), true},
 	}
 	g := NewGroup("test")
 
@@ -28,13 +28,13 @@ func TestGroupAdd(t *testing.T) {
 func TestIndexLabelValues(t *testing.T) {
 	g := NewGroup("test")
 
-	labels := []Labels{
-		Labels{"graph": "graph1", "host": "host1", "colo": "colo1"},
-		Labels{"graph": "graph1", "host": "host1", "colo": "colo2"},
-		Labels{"graph": "graph1", "host": "host2", "colo": "colo1"},
-		Labels{"graph": "graph1", "host": "host2", "colo": "colo2"},
-		Labels{"graph": "graph2", "host": "host1", "colo": "colo1"},
-		Labels{"graph": "graph3", "host": "host2", "colo": "colo1"},
+	labels := []*Labels{
+		NewLabels(LabelMap{"graph": "graph1", "host": "host1", "colo": "colo1"}),
+		NewLabels(LabelMap{"graph": "graph1", "host": "host1", "colo": "colo2"}),
+		NewLabels(LabelMap{"graph": "graph1", "host": "host2", "colo": "colo1"}),
+		NewLabels(LabelMap{"graph": "graph1", "host": "host2", "colo": "colo2"}),
+		NewLabels(LabelMap{"graph": "graph2", "host": "host1", "colo": "colo1"}),
+		NewLabels(LabelMap{"graph": "graph3", "host": "host2", "colo": "colo1"}),
 	}
 
 	var s *Series
@@ -59,7 +59,7 @@ func TestIndexLabelValues(t *testing.T) {
 		{[]string{"graph", "host", "colo"}, 6},
 	}
 
-	var dl []Labels
+	var dl []*Labels
 	for _, p := range testParams {
 		dl = g.indexLabelValues(p.labelNames)
 		if len(dl) != p.expectedNumLabels {
@@ -71,13 +71,13 @@ func TestIndexLabelValues(t *testing.T) {
 func TestFilterByLabelValues(t *testing.T) {
 	g := NewGroup("test")
 
-	labels := []Labels{
-		Labels{"graph": "graph1", "host": "host1", "colo": "colo1"},
-		Labels{"graph": "graph1", "host": "host1", "colo": "colo2"},
-		Labels{"graph": "graph1", "host": "host2", "colo": "colo1"},
-		Labels{"graph": "graph1", "host": "host2", "colo": "colo2"},
-		Labels{"graph": "graph2", "host": "host1", "colo": "colo1"},
-		Labels{"graph": "graph3", "host": "host2", "colo": "colo1"},
+	labels := []*Labels{
+		NewLabels(LabelMap{"graph": "graph1", "host": "host1", "colo": "colo1"}),
+		NewLabels(LabelMap{"graph": "graph1", "host": "host1", "colo": "colo2"}),
+		NewLabels(LabelMap{"graph": "graph1", "host": "host2", "colo": "colo1"}),
+		NewLabels(LabelMap{"graph": "graph1", "host": "host2", "colo": "colo2"}),
+		NewLabels(LabelMap{"graph": "graph2", "host": "host1", "colo": "colo1"}),
+		NewLabels(LabelMap{"graph": "graph3", "host": "host2", "colo": "colo1"}),
 	}
 
 	var s *Series
@@ -90,16 +90,16 @@ func TestFilterByLabelValues(t *testing.T) {
 	}
 
 	testParams := []struct {
-		labels            Labels
+		labels            *Labels
 		expectedNumSeries int
 	}{
-		{Labels{"graph": "graph1"}, 4},
-		{Labels{"graph": "graph2"}, 1},
-		{Labels{"host": "host1"}, 3},
-		{Labels{"host": "host2"}, 3},
-		{Labels{"host": "host0"}, 0},
-		{Labels{"graph": "graph1", "host": "host2"}, 2},
-		{Labels{"graph": "graph1", "host": "host0"}, 0},
+		{NewLabels(LabelMap{"graph": "graph1"}), 4},
+		{NewLabels(LabelMap{"graph": "graph2"}), 1},
+		{NewLabels(LabelMap{"host": "host1"}), 3},
+		{NewLabels(LabelMap{"host": "host2"}), 3},
+		{NewLabels(LabelMap{"host": "host0"}), 0},
+		{NewLabels(LabelMap{"graph": "graph1", "host": "host2"}), 2},
+		{NewLabels(LabelMap{"graph": "graph1", "host": "host0"}), 0},
 	}
 
 	var series []*Series
@@ -115,13 +115,13 @@ func TestFilterByLabelValues(t *testing.T) {
 func BenchmarkFilterByLabelValues(b *testing.B) {
 	g := NewGroup("test")
 
-	labels := []Labels{
-		Labels{"graph": "graph1", "host": "host1", "colo": "colo1"},
-		Labels{"graph": "graph1", "host": "host1", "colo": "colo2"},
-		Labels{"graph": "graph1", "host": "host2", "colo": "colo1"},
-		Labels{"graph": "graph1", "host": "host2", "colo": "colo2"},
-		Labels{"graph": "graph2", "host": "host1", "colo": "colo1"},
-		Labels{"graph": "graph3", "host": "host2", "colo": "colo1"},
+	labels := []*Labels{
+		NewLabels(LabelMap{"graph": "graph1", "host": "host1", "colo": "colo1"}),
+		NewLabels(LabelMap{"graph": "graph1", "host": "host1", "colo": "colo2"}),
+		NewLabels(LabelMap{"graph": "graph1", "host": "host2", "colo": "colo1"}),
+		NewLabels(LabelMap{"graph": "graph1", "host": "host2", "colo": "colo2"}),
+		NewLabels(LabelMap{"graph": "graph2", "host": "host1", "colo": "colo1"}),
+		NewLabels(LabelMap{"graph": "graph3", "host": "host2", "colo": "colo1"}),
 	}
 
 	var s *Series
@@ -135,20 +135,20 @@ func BenchmarkFilterByLabelValues(b *testing.B) {
 
 	g.indexLabelValues([]string{"graph"})
 	for i := 0; i < b.N; i++ {
-		g.FilterByLabelValues(Labels{"graph": "graph1"})
+		g.FilterByLabelValues(NewLabels(LabelMap{"graph": "graph1"}))
 	}
 }
 
 func BenchmarkIndexLabelValues(b *testing.B) {
 	g := NewGroup("test")
 
-	labels := []Labels{
-		Labels{"graph": "graph1", "host": "host1", "colo": "colo1"},
-		Labels{"graph": "graph1", "host": "host1", "colo": "colo2"},
-		Labels{"graph": "graph1", "host": "host2", "colo": "colo1"},
-		Labels{"graph": "graph1", "host": "host2", "colo": "colo2"},
-		Labels{"graph": "graph2", "host": "host1", "colo": "colo1"},
-		Labels{"graph": "graph3", "host": "host2", "colo": "colo1"},
+	labels := []*Labels{
+		NewLabels(LabelMap{"graph": "graph1", "host": "host1", "colo": "colo1"}),
+		NewLabels(LabelMap{"graph": "graph1", "host": "host1", "colo": "colo2"}),
+		NewLabels(LabelMap{"graph": "graph1", "host": "host2", "colo": "colo1"}),
+		NewLabels(LabelMap{"graph": "graph1", "host": "host2", "colo": "colo2"}),
+		NewLabels(LabelMap{"graph": "graph2", "host": "host1", "colo": "colo1"}),
+		NewLabels(LabelMap{"graph": "graph3", "host": "host2", "colo": "colo1"}),
 	}
 
 	var s *Series

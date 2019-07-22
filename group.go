@@ -57,7 +57,7 @@ func (g *Group) Add(series ...*Series) error {
 
 // FilterByLabelValues returns the slice of timeseries filtered by specified label
 // value pairs
-func (g *Group) FilterByLabelValues(labels Labels) []*Series {
+func (g *Group) FilterByLabelValues(labels *Labels) []*Series {
 	var filteredSeries []*Series
 
 	guid := labels.ID(labels.Keys())
@@ -73,8 +73,8 @@ func (g *Group) FilterByLabelValues(labels Labels) []*Series {
 // indexLabelValues return a slice of all the distinct combinations of the
 // input label values while ignoring labels not being specified. If no labels
 // are specified then each series will be treated separately.
-func (g *Group) indexLabelValues(groupByLabels []string) []Labels {
-	var distinctLabelValues []Labels
+func (g *Group) indexLabelValues(groupByLabels []string) []*Labels {
+	var distinctLabelValues []*Labels
 	var guid string
 
 	// clear index
@@ -88,11 +88,13 @@ func (g *Group) indexLabelValues(groupByLabels []string) []Labels {
 			groupByLabels = s.Labels().Keys()
 		}
 		if _, exists := g.index[guid]; !exists {
-			lv := make(Labels)
+			lv := make(LabelMap)
 			for _, name := range groupByLabels {
-				lv[name] = s.labels[name]
+				if v, exists := s.labels.Get(name); exists {
+					lv[name] = v
+				}
 			}
-			distinctLabelValues = append(distinctLabelValues, lv)
+			distinctLabelValues = append(distinctLabelValues, NewLabels(lv))
 		}
 
 		g.index[guid] = append(g.index[guid], uid)

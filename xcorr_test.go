@@ -181,7 +181,6 @@ func TestXCorrWithX(t *testing.T) {
 	datasets := []struct {
 		X             []float64
 		Y             []float64
-		Normalize     bool
 		ExpectedXCorr []float64
 		ExpectedIdx   int
 		ExpectedSign  func(float64) bool
@@ -189,47 +188,6 @@ func TestXCorrWithX(t *testing.T) {
 		{
 			[]float64{0, 0, 2, 0, 0},
 			[]float64{0, 0, 5, 0, 0},
-			false,
-			[]float64{10, 0, 0, 0, 0},
-			0,
-			isPositive(),
-		},
-		{
-			[]float64{0, 0, 2, 0, 0},
-			[]float64{0, 0, 0, 0, 5},
-			false,
-			[]float64{0, 0, 0, 10, 0},
-			-2,
-			isPositive(),
-		},
-		{
-			[]float64{0, 0, 2, 0, 0},
-			[]float64{5, 0, 0, 0, 0},
-			false,
-			[]float64{0, 0, 10, 0, 0},
-			2,
-			isPositive(),
-		},
-		{
-			[]float64{0, 0, 2, 0, 0},
-			[]float64{0, 0, -5, 0, 0},
-			false,
-			[]float64{-10, 0, 0, 0, 0},
-			0,
-			isNegative(),
-		},
-		{
-			[]float64{0, 0, 2, 0, 0},
-			[]float64{-5, 0, 0, 0, 0},
-			false,
-			[]float64{0, 0, -10, 0, 0},
-			2,
-			isNegative(),
-		},
-		{
-			[]float64{0, 0, 2, 0, 0},
-			[]float64{0, 0, 5, 0, 0},
-			true,
 			[]float64{0.96, -0.24, -0.24, -0.24, -0.24},
 			0,
 			isPositive(),
@@ -237,7 +195,6 @@ func TestXCorrWithX(t *testing.T) {
 		{
 			[]float64{0, 0, 2, 0, 0},
 			[]float64{0, 0, 0, 0, 5},
-			true,
 			[]float64{-0.24, -0.24, -0.24, 0.96, -0.24},
 			-2,
 			isPositive(),
@@ -245,7 +202,6 @@ func TestXCorrWithX(t *testing.T) {
 		{
 			[]float64{0, 0, 2, 0, 0},
 			[]float64{5, 0, 0, 0, 0},
-			true,
 			[]float64{-0.24, -0.24, 0.96, -0.24, -0.24},
 			2,
 			isPositive(),
@@ -253,7 +209,6 @@ func TestXCorrWithX(t *testing.T) {
 		{
 			[]float64{0, 0, 2, 0, 0},
 			[]float64{0, 0, -5, 0, 0},
-			true,
 			[]float64{-0.96, 0.24, 0.24, 0.24, 0.24},
 			0,
 			isNegative(),
@@ -261,7 +216,6 @@ func TestXCorrWithX(t *testing.T) {
 		{
 			[]float64{0, 0, 2, 0, 0},
 			[]float64{-5, 0, 0, 0, 0},
-			true,
 			[]float64{0.24, 0.24, -0.96, 0.24, 0.24},
 			2,
 			isNegative(),
@@ -269,7 +223,6 @@ func TestXCorrWithX(t *testing.T) {
 		{
 			[]float64{0, 0, 2, 2, 0},
 			[]float64{3, 3, 3, 3, 3},
-			true,
 			[]float64{0, 0, 0, 0, 0},
 			0,
 			func(x float64) bool { return x == 0 },
@@ -279,14 +232,10 @@ func TestXCorrWithX(t *testing.T) {
 	for _, ds := range datasets {
 		n := len(ds.X)
 		ft := fourier.NewFFT(n)
-		ref := zeroPad(ds.X, n)
-		if ds.Normalize {
-			ref = zNormalize(ref)
-		}
-		refFT := ft.Coefficients(nil, ref)
+		refFT := ft.Coefficients(nil, zNormalize(zeroPad(ds.X, n)))
 
 		ftY := fourier.NewFFT(n)
-		xcorr, mi, mv := xCorrWithX(refFT, ds.Y, ftY, n, ds.Normalize)
+		xcorr, mi, mv := xCorrWithX(refFT, ds.Y, ftY)
 
 		if !prettyClose(xcorr, ds.ExpectedXCorr) {
 			t.Errorf("Expected cross correlation of %v, but got %v", ds.ExpectedXCorr, xcorr)
@@ -337,27 +286,7 @@ func BenchmarkXCorr(b *testing.B) {
 	}
 }
 
-func BenchmarkXCorrNormalize(b *testing.B) {
-	x, y, n := setupXCorrData()
-
-	for i := 0; i < b.N; i++ {
-		xCorr(x, y, n, true)
-	}
-}
-
 func BenchmarkXCorrWithX(b *testing.B) {
-	x, y, n := setupXCorrData()
-
-	ft := fourier.NewFFT(n)
-	X := ft.Coefficients(nil, zeroPad(x, n))
-
-	ftY := fourier.NewFFT(n)
-	for i := 0; i < b.N; i++ {
-		xCorrWithX(X, y, ftY, n, false)
-	}
-}
-
-func BenchmarkXCorrWithXNormalize(b *testing.B) {
 	x, y, n := setupXCorrData()
 
 	ft := fourier.NewFFT(n)
@@ -365,6 +294,7 @@ func BenchmarkXCorrWithXNormalize(b *testing.B) {
 
 	ftY := fourier.NewFFT(n)
 	for i := 0; i < b.N; i++ {
-		xCorrWithX(X, y, ftY, n, true)
+		xCorrWithX(X, y, ftY)
+
 	}
 }

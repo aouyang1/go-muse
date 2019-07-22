@@ -16,7 +16,7 @@ func Example() {
 		siggen.Add(
 			siggen.Rect(1.5, 240, 10, sampleRate, duration),
 			siggen.Noise(0.1, int(sampleRate*duration)),
-		), Labels{"graph": "CallTime99Pct", "host": "host1"},
+		), NewLabels(LabelMap{"graph": "CallTime99Pct", "host": "host1"}),
 	)
 
 	// create a comparison group of time series that the reference will query against
@@ -27,19 +27,19 @@ func Example() {
 			siggen.Add(
 				siggen.Rect(1.5, 242, 7, sampleRate, duration),
 				siggen.Noise(0.1, int(sampleRate*duration)),
-			), Labels{"graph": "CallTime99Pct", "host": "host2"},
+			), NewLabels(LabelMap{"graph": "CallTime99Pct", "host": "host2"}),
 		),
 		NewSeries(
 			siggen.Add(
 				siggen.Rect(43, 240, 10, sampleRate, duration),
 				siggen.Noise(0.1, int(sampleRate*duration)),
-			), Labels{"graph": "ErrorRate", "host": "host1"},
+			), NewLabels(LabelMap{"graph": "ErrorRate", "host": "host1"}),
 		),
 		NewSeries(
 			siggen.Add(
 				siggen.Line(0, 0.1, int(sampleRate*duration)),
 				siggen.Noise(0.1, int(sampleRate*duration)),
-			), Labels{"graph": "ErrorRate", "host": "host2"},
+			), NewLabels(LabelMap{"graph": "ErrorRate", "host": "host2"}),
 		),
 	)
 

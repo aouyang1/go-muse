@@ -12,10 +12,10 @@ var (
 func TestNewSeries(t *testing.T) {
 	data := []struct {
 		y                 []float64
-		labels            Labels
+		labels            *Labels
 		expectedLabelKeys []string
 	}{
-		{y, Labels{"a": "v1"}, []string{"a"}},
+		{y, NewLabels(LabelMap{"a": "v1"}), []string{"a"}},
 		{y, nil, []string{DefaultLabel}},
 	}
 
@@ -30,21 +30,21 @@ func TestNewSeries(t *testing.T) {
 
 func TestSeriesUID(t *testing.T) {
 	data := []struct {
-		labels      Labels
+		labels      *Labels
 		expectedUID string
 	}{
 		{
-			Labels{
+			NewLabels(LabelMap{
 				"a": "v1",
-			},
+			}),
 			"a:v1",
 		},
 		{
-			Labels{
+			NewLabels(LabelMap{
 				"a": "v1",
 				"c": "v2",
 				"b": "v3",
-			},
+			}),
 			"a:v1,b:v3,c:v2",
 		},
 	}
@@ -62,23 +62,23 @@ func TestSeriesUID(t *testing.T) {
 
 func TestSeriesLabels(t *testing.T) {
 	data := []struct {
-		labels         Labels
+		labels         *Labels
 		expectedLabels []string
 	}{
 		{
-			Labels{
+			NewLabels(LabelMap{
 				"a": "v1",
 				"c": "v2",
 				"b": "v3",
-			},
+			}),
 			[]string{"a", "b", "c"},
 		},
 		{
-			Labels{
+			NewLabels(LabelMap{
 				"a": "v1",
 				"A": "v2",
 				"b": "v3",
-			},
+			}),
 			[]string{"A", "a", "b"},
 		},
 	}

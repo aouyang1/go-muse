@@ -7,14 +7,14 @@ import (
 // Series is the general representation of timeseries containing only values.
 type Series struct {
 	y      []float64
-	labels Labels
+	labels *Labels
 }
 
 // NewSeries creates a new Series with a set of labels. If not labels are
 // specified a unique ID is automatically generated
-func NewSeries(y []float64, labels Labels) *Series {
-	if len(labels) == 0 {
-		labels = Labels{DefaultLabel: uuid.New().String()}
+func NewSeries(y []float64, labels *Labels) *Series {
+	if labels == nil || labels.Len() == 0 {
+		labels = NewLabels(LabelMap{DefaultLabel: uuid.New().String()})
 	}
 
 	return &Series{y: y, labels: labels}
@@ -31,7 +31,7 @@ func (s *Series) Values() []float64 {
 }
 
 // Labels returns the map of label to values for the timeseries
-func (s *Series) Labels() Labels {
+func (s *Series) Labels() *Labels {
 	return s.labels
 }
 
