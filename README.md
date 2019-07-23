@@ -7,6 +7,11 @@
 # go-muse
 Golang library for comparing one time series with a group of other labeled time series. This library supports arbitrary slicing and dicing of the labeled time series for a more iterative approach to finding visibly similar timeseries. Comparison between two timeseries is done with z-normalizing both series and cross correlating the two using Fast Fourier Transforms (FFT). This library also support parallelization by setting the `Concurrency` variable in the package.
 
+### Motivation
+A common problem in the operations world is finding all the graphs that look like a particular alert or incident. For example a Site Reliability Engineer (SRE) receives an alert which indicates that something is broken. The SRE generally will open up the graph that triggered the alert which is likely one graph of many in a dashboard. Next, the SRE begins scrolling through this dashboard looking for anything that resembles the waveform of the received alert. Once the SRE has filtered down the set of graphs that looks the original alert graph, he/she begins building a story as to why the alert fired and root causing the incident. This whole process can be time consuming depending on the size and complexity of the dashboards. This library aims to provide a first pass filtering of the existing graphs or time series, so that an engineer can focus just on what looks similar.
+
+This library will filter results down to anything that is positively or negatively correlated with the input reference series. You can limit the number of results returned and also specify a score between 0 to 1 with 1 being perfectly correlated. You can also filter down to a number of samples before and after the input reference series to filter our strong matches that are outside your window of interest.
+
 ## Contents
 - [Installation](#installation)
 - [Quick start](#quick-start)
