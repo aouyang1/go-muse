@@ -4,8 +4,6 @@ github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0/go.mod h1:E/TSTwGw
 github.com/google/uuid v1.1.1 h1:Gkbcsh/GbpXz7lPftLA3P6TYMwjCLYm83jiFQZF/3gY=
 github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/jung-kurt/gofpdf v1.0.3-0.20190309125859-24315acbbda5/go.mod h1:7Id9E/uU8ce6rXgefFLlgrJj/GYY22cpxn+r32jIOes=
-github.com/matrix-profile-foundation/go-matrixprofile v0.1.0 h1:LAqdChAKgqMulF8ihkddvmi9y09lHJhqnJDFNZYIzu8=
-github.com/matrix-profile-foundation/go-matrixprofile v0.1.0/go.mod h1:+C7pWj4uDm6lWE9lIMMQa/VI8LTPLNxdapeAZvtxoxU=
 github.com/matrix-profile-foundation/go-matrixprofile v0.2.0 h1:CMzuMaH5YzhgfnNl8+YUnjcWHYu9WzBBYciOmRsRGU0=
 github.com/matrix-profile-foundation/go-matrixprofile v0.2.0/go.mod h1:+C7pWj4uDm6lWE9lIMMQa/VI8LTPLNxdapeAZvtxoxU=
 golang.org/x/exp v0.0.0-20180321215751-8460e604b9de/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
