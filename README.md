@@ -5,7 +5,6 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 # go-muse
-
 Golang library for comparing one time series with a group of other labeled time series. This library supports arbitrary slicing and dicing of the labeled time series for a more iterative approach to finding visibly similar timeseries. Comparison between two timeseries is done with z-normalizing both series and cross correlating the two using Fast Fourier Transforms (FFT). This library also support parallelization by setting the `Concurrency` variable in the package.
 
 ## Contents
@@ -21,7 +20,7 @@ Golang library for comparing one time series with a group of other labeled time 
 ```sh
 $ go get -u github.com/aouyang1/go-muse
 $ cd $GOPATH/src/github.com/aouyang1/go-muse
-$ make setup
+$ make all
 ```
 
 ## Quick start
