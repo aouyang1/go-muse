@@ -82,7 +82,10 @@ func zNormalize(x []float64) []float64 {
 	stdX := stat.StdDev(x, nil)
 
 	if stdX != 0 {
-		floats.Scale(math.Sqrt((n*n-1)/(n*n-n))/stdX, x)
+		// stddev will be calculated from the sample variance, so here
+		// we force the variance to be divided by n such that the resulting
+		// score will always be a maximum absolute value of 1.0
+		floats.Scale(1/(math.Sqrt((n-1)/n)*stdX), x)
 	}
 
 	return x
@@ -137,7 +140,6 @@ func xCorrWithX(X []complex128, y []float64, ft *fourier.FFT) ([]float64, int, f
 	n := ft.Len()
 	y = zNormalize(zeroPad(y, n))
 
-	//ft := fourier.NewFFT(n)
 	C := ft.Coefficients(nil, y)
 	conj(C)
 	mult(C, X)

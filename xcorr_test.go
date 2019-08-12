@@ -1,6 +1,7 @@
 package muse
 
 import (
+	"math"
 	"math/rand"
 	"testing"
 
@@ -33,6 +34,29 @@ func TestNextPowOf2(t *testing.T) {
 			t.Errorf("Expected %d, but got %d", d.expected, val)
 		}
 	}
+}
+
+func TestZNormalize(t *testing.T) {
+	data := []struct {
+		ts []float64
+	}{
+		{[]float64{0, 1, 2, 3, 4, 5}},
+		{[]float64{0, 1, 2, 3, 4, 5, 6}},
+		{[]float64{3, 4, 3, 4, 3}},
+		{[]float64{99, 100, 101, 102, 103}},
+	}
+
+	for _, d := range data {
+		zNormalize(d.ts)
+		var ssum float64
+		for i := 0; i < len(d.ts); i++ {
+			ssum += d.ts[i] * d.ts[i]
+		}
+		if math.Abs(ssum-float64(len(d.ts))) > 1E-8 {
+			t.Errorf("Expected a squared sum of %d, but got %.3f for %v", len(d.ts), ssum, d.ts)
+		}
+	}
+
 }
 
 func TestZeroPad(t *testing.T) {
@@ -112,7 +136,7 @@ func TestXCorr(t *testing.T) {
 			[]float64{0, 0, 2, 0, 0},
 			[]float64{0, 0, 5, 0, 0},
 			true,
-			[]float64{0.96, -0.24, -0.24, -0.24, -0.24},
+			[]float64{1.00, -0.25, -0.25, -0.25, -0.25},
 			0,
 			isPositive(),
 		},
@@ -120,7 +144,7 @@ func TestXCorr(t *testing.T) {
 			[]float64{0, 0, 2, 0, 0},
 			[]float64{0, 0, 0, 0, 5},
 			true,
-			[]float64{-0.24, -0.24, -0.24, 0.96, -0.24},
+			[]float64{-0.25, -0.25, -0.25, 1.00, -0.25},
 			-2,
 			isPositive(),
 		},
@@ -128,7 +152,7 @@ func TestXCorr(t *testing.T) {
 			[]float64{0, 0, 2, 0, 0},
 			[]float64{5, 0, 0, 0, 0},
 			true,
-			[]float64{-0.24, -0.24, 0.96, -0.24, -0.24},
+			[]float64{-0.25, -0.25, 1.00, -0.25, -0.25},
 			2,
 			isPositive(),
 		},
@@ -136,7 +160,7 @@ func TestXCorr(t *testing.T) {
 			[]float64{0, 0, 2, 0, 0},
 			[]float64{0, 0, -5, 0, 0},
 			true,
-			[]float64{-0.96, 0.24, 0.24, 0.24, 0.24},
+			[]float64{-1.00, 0.25, 0.25, 0.25, 0.25},
 			0,
 			isNegative(),
 		},
@@ -144,7 +168,7 @@ func TestXCorr(t *testing.T) {
 			[]float64{0, 0, 2, 0, 0},
 			[]float64{-5, 0, 0, 0, 0},
 			true,
-			[]float64{0.24, 0.24, -0.96, 0.24, 0.24},
+			[]float64{0.25, 0.25, -1.00, 0.25, 0.25},
 			2,
 			isNegative(),
 		},
@@ -188,35 +212,35 @@ func TestXCorrWithX(t *testing.T) {
 		{
 			[]float64{0, 0, 2, 0, 0},
 			[]float64{0, 0, 5, 0, 0},
-			[]float64{0.96, -0.24, -0.24, -0.24, -0.24},
+			[]float64{1.00, -0.25, -0.25, -0.25, -0.25},
 			0,
 			isPositive(),
 		},
 		{
 			[]float64{0, 0, 2, 0, 0},
 			[]float64{0, 0, 0, 0, 5},
-			[]float64{-0.24, -0.24, -0.24, 0.96, -0.24},
+			[]float64{-0.25, -0.25, -0.25, 1.00, -0.25},
 			-2,
 			isPositive(),
 		},
 		{
 			[]float64{0, 0, 2, 0, 0},
 			[]float64{5, 0, 0, 0, 0},
-			[]float64{-0.24, -0.24, 0.96, -0.24, -0.24},
+			[]float64{-0.25, -0.25, 1.00, -0.25, -0.25},
 			2,
 			isPositive(),
 		},
 		{
 			[]float64{0, 0, 2, 0, 0},
 			[]float64{0, 0, -5, 0, 0},
-			[]float64{-0.96, 0.24, 0.24, 0.24, 0.24},
+			[]float64{-1.00, 0.25, 0.25, 0.25, 0.25},
 			0,
 			isNegative(),
 		},
 		{
 			[]float64{0, 0, 2, 0, 0},
 			[]float64{-5, 0, 0, 0, 0},
-			[]float64{0.24, 0.24, -0.96, 0.24, 0.24},
+			[]float64{0.25, 0.25, -1.00, 0.25, 0.25},
 			2,
 			isNegative(),
 		},
