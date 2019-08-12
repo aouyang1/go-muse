@@ -45,7 +45,7 @@ func TestRunSimple(t *testing.T) {
 	}
 
 	expectedScores := Scores{
-		Score{Labels: NewLabels(LabelMap{"graph": "evenLower"}), Lag: 2, PercentScore: 83},
+		Score{Labels: NewLabels(LabelMap{"graph": "evenLower"}), Lag: 2, PercentScore: 84},
 		Score{Labels: NewLabels(LabelMap{"graph": "slightlyLower"}), Lag: 0, PercentScore: 95},
 		Score{Labels: NewLabels(LabelMap{"graph": "perfectMatch"}), Lag: 0, PercentScore: 100},
 	}
@@ -72,7 +72,7 @@ func TestRunMultiDimensional(t *testing.T) {
 	comp := []*Series{
 		NewSeries([]float64{0.0, 0.0, 0.0, 0.0, 0.1, 0.2, 0.3, 0.4}, NewLabels(LabelMap{"graph": "graph1", "host": "host1"})),
 		NewSeries([]float64{0.2, 0.1, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1}, NewLabels(LabelMap{"graph": "graph1", "host": "host2"})),
-		NewSeries([]float64{0.0, 0.0, 0.0, 0.0, 0.2, 0.4, 0.5, 0.8}, NewLabels(LabelMap{"graph": "graph2", "host": "host1"})),
+		NewSeries([]float64{0.0, 0.0, 0.0, 0.0, 0.2, 0.4, 0.4, 0.8}, NewLabels(LabelMap{"graph": "graph2", "host": "host1"})),
 		NewSeries([]float64{0.2, 0.1, 0.2, 0.1, 0.2, 0.1, 0.22, 0.1}, NewLabels(LabelMap{"graph": "graph3", "host": "host1"})),
 		NewSeries([]float64{0.0, 0.0, 0.0, 0.0, -0.2, -0.4, 0.0, -0.8}, NewLabels(LabelMap{"graph": "graph4", "host": "host1"})),
 		NewSeries([]float64{0.0, 0.0, 0.0, -0.2, -0.4, -0.6, 1.0, 0.0}, NewLabels(LabelMap{"graph": "graph5", "host": "host1"})),
@@ -80,9 +80,9 @@ func TestRunMultiDimensional(t *testing.T) {
 
 	expectedScores := Scores{
 		Score{Labels: NewLabels(LabelMap{"graph": "graph3", "host": "host1"}), Lag: 1, PercentScore: 55},
-		Score{Labels: NewLabels(LabelMap{"graph": "graph5", "host": "host1"}), Lag: 2, PercentScore: 63},
-		Score{Labels: NewLabels(LabelMap{"graph": "graph4", "host": "host1"}), Lag: 0, PercentScore: 80},
-		Score{Labels: NewLabels(LabelMap{"graph": "graph2", "host": "host1"}), Lag: 0, PercentScore: 99},
+		Score{Labels: NewLabels(LabelMap{"graph": "graph5", "host": "host1"}), Lag: 2, PercentScore: 64},
+		Score{Labels: NewLabels(LabelMap{"graph": "graph4", "host": "host1"}), Lag: 0, PercentScore: 81},
+		Score{Labels: NewLabels(LabelMap{"graph": "graph2", "host": "host1"}), Lag: 0, PercentScore: 98},
 		Score{Labels: NewLabels(LabelMap{"graph": "graph1", "host": "host1"}), Lag: 0, PercentScore: 100},
 	}
 
@@ -111,8 +111,8 @@ func TestRunWithLargerGroup(t *testing.T) {
 	}
 
 	expectedScores := Scores{
-		Score{Labels: NewLabels(LabelMap{"graph": "evenLower"}), Lag: 4, PercentScore: 82},
-		Score{Labels: NewLabels(LabelMap{"graph": "slightlyLower"}), Lag: 1, PercentScore: 93},
+		Score{Labels: NewLabels(LabelMap{"graph": "evenLower"}), Lag: 3, PercentScore: 82},
+		Score{Labels: NewLabels(LabelMap{"graph": "slightlyLower"}), Lag: 1, PercentScore: 94},
 		Score{Labels: NewLabels(LabelMap{"graph": "perfectMatch"}), Lag: 1, PercentScore: 100},
 	}
 
