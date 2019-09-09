@@ -99,9 +99,9 @@ func main() {
 ```
 ```sh
 $ go run example_test.go
-[{map[graph:CallTime99Pct host:host2] -3 82} {map[graph:ErrorRate host:host1] 0 99} {map[graph:CallTime99Pct host:host1] 0 100}] 93.66666666666667
-[{map[graph:ErrorRate host:host1] 0 99} {map[graph:CallTime99Pct host:host1] 0 100}] 99.5
-[{map[graph:CallTime99Pct host:host2] -3 82} {map[graph:CallTime99Pct host:host1] 0 100}] 91
+[{map[graph:CallTime99Pct host:host1] 0 100} {map[graph:ErrorRate host:host1] 0 99} {map[graph:CallTime99Pct host:host2] -3 82}] 93.66666666666667
+[{map[graph:CallTime99Pct host:host1] 0 100} {map[graph:ErrorRate host:host1] 0 99}] 99.5
+[{map[graph:CallTime99Pct host:host1] 0 100} {map[graph:CallTime99Pct host:host2] -3 82}] 91
 ```
 
 ## Benchmarks

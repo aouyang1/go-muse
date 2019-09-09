@@ -45,9 +45,9 @@ func TestRunSimple(t *testing.T) {
 	}
 
 	expectedScores := Scores{
-		Score{Labels: NewLabels(LabelMap{"graph": "evenLower"}), Lag: 2, PercentScore: 84},
-		Score{Labels: NewLabels(LabelMap{"graph": "slightlyLower"}), Lag: 0, PercentScore: 95},
 		Score{Labels: NewLabels(LabelMap{"graph": "perfectMatch"}), Lag: 0, PercentScore: 100},
+		Score{Labels: NewLabels(LabelMap{"graph": "slightlyLower"}), Lag: 0, PercentScore: 95},
+		Score{Labels: NewLabels(LabelMap{"graph": "evenLower"}), Lag: 2, PercentScore: 84},
 	}
 
 	compGroup := NewGroup("targets")
@@ -79,11 +79,11 @@ func TestRunMultiDimensional(t *testing.T) {
 	}
 
 	expectedScores := Scores{
-		Score{Labels: NewLabels(LabelMap{"graph": "graph3", "host": "host1"}), Lag: 1, PercentScore: 55},
-		Score{Labels: NewLabels(LabelMap{"graph": "graph5", "host": "host1"}), Lag: 2, PercentScore: 64},
-		Score{Labels: NewLabels(LabelMap{"graph": "graph4", "host": "host1"}), Lag: 0, PercentScore: 81},
-		Score{Labels: NewLabels(LabelMap{"graph": "graph2", "host": "host1"}), Lag: 0, PercentScore: 98},
 		Score{Labels: NewLabels(LabelMap{"graph": "graph1", "host": "host1"}), Lag: 0, PercentScore: 100},
+		Score{Labels: NewLabels(LabelMap{"graph": "graph2", "host": "host1"}), Lag: 0, PercentScore: 98},
+		Score{Labels: NewLabels(LabelMap{"graph": "graph4", "host": "host1"}), Lag: 0, PercentScore: 81},
+		Score{Labels: NewLabels(LabelMap{"graph": "graph5", "host": "host1"}), Lag: 2, PercentScore: 64},
+		Score{Labels: NewLabels(LabelMap{"graph": "graph3", "host": "host1"}), Lag: 1, PercentScore: 55},
 	}
 
 	compGroup := NewGroup("targets")
@@ -111,9 +111,9 @@ func TestRunWithLargerGroup(t *testing.T) {
 	}
 
 	expectedScores := Scores{
-		Score{Labels: NewLabels(LabelMap{"graph": "evenLower"}), Lag: 3, PercentScore: 82},
-		Score{Labels: NewLabels(LabelMap{"graph": "slightlyLower"}), Lag: 1, PercentScore: 94},
 		Score{Labels: NewLabels(LabelMap{"graph": "perfectMatch"}), Lag: 1, PercentScore: 100},
+		Score{Labels: NewLabels(LabelMap{"graph": "slightlyLower"}), Lag: 1, PercentScore: 94},
+		Score{Labels: NewLabels(LabelMap{"graph": "evenLower"}), Lag: 3, PercentScore: 82},
 	}
 
 	compGroup := NewGroup("targets")

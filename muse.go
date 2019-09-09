@@ -144,15 +144,15 @@ func (r *Results) passed(s Score) bool {
 
 // Fetch returns the sorted scores in ascending order along with the average percent score
 func (r *Results) Fetch() (Scores, float64) {
-	s := make(Scores, 0, len(r.scores))
+	s := make(Scores, len(r.scores))
 	var score Score
 	var scoreSum int
 	numScores := len(r.scores)
 
-	for len(r.scores) > 0 {
+	for i := numScores - 1; i >= 0; i-- {
 		score = heap.Pop(&r.scores).(Score)
 		scoreSum += score.PercentScore
-		s = append(s, score)
+		s[i] = score
 	}
 	return s, float64(scoreSum) / float64(numScores)
 }
