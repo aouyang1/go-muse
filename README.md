@@ -29,9 +29,6 @@ $ make all
 ```
 
 ## Quick start
-```sh
-$ cat example_test.go
-```
 ```go
 package main
 
@@ -96,12 +93,6 @@ func main() {
 	m.Run([]string{"host"})
 	fmt.Println(m.Results.Fetch())
 }
-```
-```sh
-$ go run example_test.go
-[{map[graph:CallTime99Pct host:host1] 0 100} {map[graph:ErrorRate host:host1] 0 99} {map[graph:CallTime99Pct host:host2] -3 82}] 93.66666666666667
-[{map[graph:CallTime99Pct host:host1] 0 100} {map[graph:ErrorRate host:host1] 0 99}] 99.5
-[{map[graph:CallTime99Pct host:host1] 0 100} {map[graph:CallTime99Pct host:host2] -3 82}] 91
 ```
 
 ## Benchmarks

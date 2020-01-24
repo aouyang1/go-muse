@@ -11,13 +11,17 @@ func compareScores(scores, expectedScores Scores, t *testing.T) {
 		t.Fatalf("Got %d scores, but expected %d scores", len(scores), len(expectedScores))
 	}
 	for i, score := range scores {
-		switch {
-		case score.Lag != expectedScores[i].Lag:
-			t.Fatalf("Expected %d lag but got %d lag", expectedScores[i].Lag, score.Lag)
-		case score.PercentScore != expectedScores[i].PercentScore:
-			t.Fatalf("Expected %d score but got %d score", expectedScores[i].PercentScore, score.PercentScore)
-		case score.Labels.Len() != expectedScores[i].Labels.Len():
-			t.Fatalf("Expected %d labels but got %d labels", expectedScores[i].Labels.Len(), score.Labels.Len())
+		if score.Lag != expectedScores[i].Lag {
+			t.Errorf("Expected %d lag but got %d lag", expectedScores[i].Lag, score.Lag)
+			continue
+		}
+		if score.PercentScore != expectedScores[i].PercentScore {
+			t.Errorf("Expected %d score but got %d score", expectedScores[i].PercentScore, score.PercentScore)
+			continue
+		}
+		if score.Labels.Len() != expectedScores[i].Labels.Len() {
+			t.Errorf("Expected %d labels but got %d labels", expectedScores[i].Labels.Len(), score.Labels.Len())
+			continue
 		}
 		for j, k := range score.Labels.Keys() {
 			if k != expectedScores[i].Labels.Keys()[j] {
@@ -42,12 +46,16 @@ func TestRunSimple(t *testing.T) {
 		NewSeries([]float64{0, 0, 0, 0, 2, 4, 6, 6, 4, 2, 0, 0}, NewLabels(LabelMap{"graph": "perfectMatch"})),
 		NewSeries([]float64{0, 0, 0, 0, 2, 4, 6, 4, 2, 0, 0, 0}, NewLabels(LabelMap{"graph": "slightlyLower"})),
 		NewSeries([]float64{0, 0, 0, 2, 4, 2, 0, 0, 0, 0, 0, 0}, NewLabels(LabelMap{"graph": "evenLower"})),
+		NewSeries([]float64{0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 2, 0}, NewLabels(LabelMap{"graph": "evenLowerShiftedAhead"})),
+		NewSeries([]float64{3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, NewLabels(LabelMap{"graph": "zeros"})),
 	}
 
 	expectedScores := Scores{
 		Score{Labels: NewLabels(LabelMap{"graph": "perfectMatch"}), Lag: 0, PercentScore: 100},
-		Score{Labels: NewLabels(LabelMap{"graph": "slightlyLower"}), Lag: 0, PercentScore: 95},
-		Score{Labels: NewLabels(LabelMap{"graph": "evenLower"}), Lag: 2, PercentScore: 84},
+		Score{Labels: NewLabels(LabelMap{"graph": "slightlyLower"}), Lag: 0, PercentScore: 93},
+		Score{Labels: NewLabels(LabelMap{"graph": "evenLowerShiftedAhead"}), Lag: -3, PercentScore: 75},
+		Score{Labels: NewLabels(LabelMap{"graph": "evenLower"}), Lag: 2, PercentScore: 73},
+		Score{Labels: NewLabels(LabelMap{"graph": "zeros"}), Lag: 0, PercentScore: 0},
 	}
 
 	compGroup := NewGroup("targets")
@@ -56,7 +64,10 @@ func TestRunSimple(t *testing.T) {
 	}
 
 	Concurrency = 10
-	g := New(ref, compGroup, NewResults(10, 20, 0))
+	g, err := New(ref, compGroup, NewResults(10, 20, 0))
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
 	g.Run([]string{"graph"})
 
 	scores, _ := g.Results.Fetch()
@@ -81,9 +92,9 @@ func TestRunMultiDimensional(t *testing.T) {
 	expectedScores := Scores{
 		Score{Labels: NewLabels(LabelMap{"graph": "graph1", "host": "host1"}), Lag: 0, PercentScore: 100},
 		Score{Labels: NewLabels(LabelMap{"graph": "graph2", "host": "host1"}), Lag: 0, PercentScore: 98},
-		Score{Labels: NewLabels(LabelMap{"graph": "graph4", "host": "host1"}), Lag: 0, PercentScore: 81},
-		Score{Labels: NewLabels(LabelMap{"graph": "graph5", "host": "host1"}), Lag: 2, PercentScore: 64},
-		Score{Labels: NewLabels(LabelMap{"graph": "graph3", "host": "host1"}), Lag: 1, PercentScore: 55},
+		Score{Labels: NewLabels(LabelMap{"graph": "graph4", "host": "host1"}), Lag: 0, PercentScore: 76},
+		Score{Labels: NewLabels(LabelMap{"graph": "graph5", "host": "host1"}), Lag: 2, PercentScore: 47},
+		Score{Labels: NewLabels(LabelMap{"graph": "graph3", "host": "host1"}), Lag: 7, PercentScore: 21},
 	}
 
 	compGroup := NewGroup("targets")
@@ -92,7 +103,10 @@ func TestRunMultiDimensional(t *testing.T) {
 	}
 
 	Concurrency = 10
-	m := New(ref, compGroup, NewResults(10, 20, 0))
+	m, err := New(ref, compGroup, NewResults(10, 20, 0))
+	if err != nil {
+		t.Fatalf("%+v\n", err)
+	}
 	m.Run([]string{"graph"})
 
 	scores, _ := m.Results.Fetch()
@@ -105,15 +119,7 @@ func TestRunWithLargerGroup(t *testing.T) {
 	)
 
 	comp := []*Series{
-		NewSeries([]float64{0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 6, 6, 4, 2, 0, 0}, NewLabels(LabelMap{"graph": "perfectMatch"})),
-		NewSeries([]float64{0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 6, 4, 2, 0, 0, 0}, NewLabels(LabelMap{"graph": "slightlyLower"})),
-		NewSeries([]float64{0, 0, 0, 0, 0, 0, 0, 2, 4, 2, 0, 0, 0, 0, 0, 0}, NewLabels(LabelMap{"graph": "evenLower"})),
-	}
-
-	expectedScores := Scores{
-		Score{Labels: NewLabels(LabelMap{"graph": "perfectMatch"}), Lag: 1, PercentScore: 100},
-		Score{Labels: NewLabels(LabelMap{"graph": "slightlyLower"}), Lag: 1, PercentScore: 94},
-		Score{Labels: NewLabels(LabelMap{"graph": "evenLower"}), Lag: 3, PercentScore: 82},
+		NewSeries([]float64{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4, 6, 6, 4, 2, 0, 0}, NewLabels(LabelMap{"graph": "longer"})),
 	}
 
 	compGroup := NewGroup("targets")
@@ -121,12 +127,10 @@ func TestRunWithLargerGroup(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 
-	Concurrency = 10
-	g := New(ref, compGroup, NewResults(10, 20, 0))
-	g.Run([]string{"graph"})
-
-	scores, _ := g.Results.Fetch()
-	compareScores(scores, expectedScores, t)
+	_, err := New(ref, compGroup, NewResults(10, 20, 0))
+	if err == nil {
+		t.Fatalf("Expected error with length mismatch of comparison and reference time series")
+	}
 }
 
 func BenchmarkMuseRun(b *testing.B) {
@@ -153,7 +157,10 @@ func BenchmarkMuseRun(b *testing.B) {
 	Concurrency = 10
 
 	for i := 0; i < b.N; i++ {
-		g := New(ref, compGroup, NewResults(10, 20, 0))
+		g, err := New(ref, compGroup, NewResults(10, 20, 0))
+		if err != nil {
+			b.Fatalf("%v\n", err)
+		}
 		g.Run([]string{"graph"})
 	}
 }
@@ -180,7 +187,10 @@ func BenchmarkMuseRunLarge(b *testing.B) {
 	Concurrency = 10
 
 	for i := 0; i < b.N; i++ {
-		g := New(ref, compGroup, NewResults(10, 20, 0))
+		g, err := New(ref, compGroup, NewResults(10, 20, 0))
+		if err != nil {
+			b.Fatalf("%+v\n", err)
+		}
 		g.Run([]string{"host"})
 	}
 }

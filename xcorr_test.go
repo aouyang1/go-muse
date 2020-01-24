@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"testing"
 
+	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/fourier"
 )
 
@@ -52,7 +53,7 @@ func TestZNormalize(t *testing.T) {
 		for i := 0; i < len(d.ts); i++ {
 			ssum += d.ts[i] * d.ts[i]
 		}
-		if math.Abs(ssum-float64(len(d.ts))) > 1E-8 {
+		if math.Abs(ssum-float64(len(d.ts)-1)) > 1E-8 {
 			t.Errorf("Expected a squared sum of %d, but got %.3f for %v", len(d.ts), ssum, d.ts)
 		}
 	}
@@ -256,7 +257,13 @@ func TestXCorrWithX(t *testing.T) {
 	for _, ds := range datasets {
 		n := len(ds.X)
 		ft := fourier.NewFFT(n)
-		refFT := ft.Coefficients(nil, zNormalize(zeroPad(ds.X, n)))
+		x, err := zNormalize(ds.X)
+		if err != nil {
+			t.Errorf("%+v\n", err)
+			continue
+		}
+		floats.Scale(1/float64(len(x)-1), x)
+		refFT := ft.Coefficients(nil, zeroPad(x, n))
 
 		ftY := fourier.NewFFT(n)
 		xcorr, mi, mv := xCorrWithX(refFT, ds.Y, ftY)
@@ -314,7 +321,11 @@ func BenchmarkXCorrWithX(b *testing.B) {
 	x, y, n := setupXCorrData()
 
 	ft := fourier.NewFFT(n)
-	X := ft.Coefficients(nil, zNormalize(zeroPad(x, n)))
+	x, err := zNormalize(x)
+	if err != nil {
+		b.Fatalf("%+v\n", err)
+	}
+	X := ft.Coefficients(nil, zeroPad(x, n))
 
 	ftY := fourier.NewFFT(n)
 	for i := 0; i < b.N; i++ {

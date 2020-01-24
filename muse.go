@@ -2,8 +2,10 @@ package muse
 
 import (
 	"container/heap"
+	"fmt"
 	"math"
 
+	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/fourier"
 )
 
@@ -22,8 +24,13 @@ type Muse struct {
 
 // New creates a new Muse instance with a set reference timeseries, a
 // comparison group of timeseries, and results
-func New(ref *Series, comp *Group, results *Results) *Muse {
-	return &Muse{Reference: ref, Comparison: comp, Results: results}
+func New(ref *Series, comp *Group, results *Results) (*Muse, error) {
+	for uid, s := range comp.registry {
+		if ref.Length() != s.Length() {
+			return nil, fmt.Errorf("%s from comparison group series does not have the same length as the reference", uid)
+		}
+	}
+	return &Muse{Reference: ref, Comparison: comp, Results: results}, nil
 }
 
 // scoreSingle calculates the highest score for a single set of label values given
@@ -65,13 +72,19 @@ func (m *Muse) scoreSingle(idx int, refFT []complex128, labelValues *Labels, n i
 // series and a group of comparison time series. Number of scores will be the number
 // of unique labels specified in the input. If no groupByLabels is specified, then
 // each timeseries will receive its own score.
-func (m *Muse) Run(groupByLabels []string) {
+func (m *Muse) Run(groupByLabels []string) error {
 	// Find the next power 2 that's at least twice as long as the the number of values
 	// in the reference time series
 	n := calculateN(m.Reference.Length(), m.Comparison.Length())
 
 	ft := fourier.NewFFT(n)
-	refFT := ft.Coefficients(nil, zNormalize(zeroPad(m.Reference.Values(), n)))
+	x, err := zNormalize(m.Reference.Values())
+	if err != nil {
+		return err
+	}
+	floats.Scale(1/float64(len(x)-1), x)
+	x = zeroPad(x, n)
+	refFT := ft.Coefficients(nil, x)
 
 	labelValuesSet := m.Comparison.indexLabelValues(groupByLabels)
 
@@ -115,6 +128,7 @@ func (m *Muse) Run(groupByLabels []string) {
 			}
 		}
 	}
+	return nil
 }
 
 // Results tracks the top scores in sorted order given a specified maximum lag, top N

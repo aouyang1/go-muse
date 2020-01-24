@@ -1,13 +1,19 @@
 package muse
 
 import (
+	"errors"
 	"fmt"
+	"log"
 	"math"
 	"math/cmplx"
 
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/fourier"
 	"gonum.org/v1/gonum/stat"
+)
+
+var (
+	errStdDevZero = errors.New("Standard deviation of zero")
 )
 
 func nextPowOf2(val float64) int {
@@ -75,20 +81,17 @@ func zeroPad(x []float64, n int) []float64 {
 
 // zNormalize removes the mean and divides each value by the standard
 // deviation of the resulting series
-func zNormalize(x []float64) []float64 {
+func zNormalize(x []float64) ([]float64, error) {
 	n := float64(len(x))
 	floats.AddConst(-floats.Sum(x)/n, x)
 
 	stdX := stat.StdDev(x, nil)
 
-	if stdX != 0 {
-		// stddev will be calculated from the sample variance, so here
-		// we force the variance to be divided by n such that the resulting
-		// score will always be a maximum absolute value of 1.0
-		floats.Scale(1/(math.Sqrt((n-1)/n)*stdX), x)
+	if stdX == 0 {
+		return nil, errStdDevZero
 	}
-
-	return x
+	floats.Scale(1/stdX, x)
+	return x, nil
 }
 
 // xCorr computes the cross correlation slice between x and y, index of the maximum absolute value
@@ -102,13 +105,21 @@ func xCorr(x []float64, y []float64, n int, normalize bool) ([]float64, int, flo
 		n = minN
 	}
 
+	if normalize {
+		var err error
+		x, err = zNormalize(x)
+		if err != nil {
+			log.Printf("%+v\n", err)
+			return make([]float64, n), 0, 0
+		}
+		y, err = zNormalize(y)
+		if err != nil {
+			log.Printf("%+v\n", err)
+			return make([]float64, n), 0, 0
+		}
+	}
 	x = zeroPad(x, n)
 	y = zeroPad(y, n)
-
-	if normalize {
-		x = zNormalize(x)
-		y = zNormalize(y)
-	}
 
 	ft := fourier.NewFFT(n)
 
@@ -118,7 +129,7 @@ func xCorr(x []float64, y []float64, n int, normalize bool) ([]float64, int, flo
 	mult(X, Y)
 	cc := ft.Sequence(nil, X)
 	if normalize {
-		floats.Scale(1.0/float64(n*n), cc)
+		floats.Scale(1.0/float64(n*(n-1)), cc)
 	} else {
 		floats.Scale(1.0/float64(n), cc)
 	}
@@ -137,14 +148,21 @@ func xCorr(x []float64, y []float64, n int, normalize bool) ([]float64, int, flo
 // execution and not repeatedly calculating FFT(x). Must pass in the fourier transform
 // struct used to compute X.
 func xCorrWithX(X []complex128, y []float64, ft *fourier.FFT) ([]float64, int, float64) {
+	var err error
+
 	n := ft.Len()
-	y = zNormalize(zeroPad(y, n))
+	y, err = zNormalize(y)
+	if err != nil {
+		log.Printf("%+v\n", err)
+		return make([]float64, n), 0, 0
+	}
+	y = zeroPad(y, n)
 
 	C := ft.Coefficients(nil, y)
 	conj(C)
 	mult(C, X)
 	cc := ft.Sequence(nil, C)
-	floats.Scale(1.0/float64(n*n), cc)
+	floats.Scale(1.0/float64(n), cc)
 
 	mi := maxAbsIndex(cc)
 	mv := cc[mi]
