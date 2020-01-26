@@ -63,8 +63,7 @@ func TestRunSimple(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 
-	Concurrency = 10
-	g, err := New(ref, compGroup, NewResults(10, 20, 0))
+	g, err := New(ref, compGroup, NewResults(10, 20, 0), 10)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
@@ -102,8 +101,7 @@ func TestRunMultiDimensional(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 
-	Concurrency = 10
-	m, err := New(ref, compGroup, NewResults(10, 20, 0))
+	m, err := New(ref, compGroup, NewResults(10, 20, 0), 10)
 	if err != nil {
 		t.Fatalf("%+v\n", err)
 	}
@@ -127,7 +125,7 @@ func TestRunWithLargerGroup(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 
-	_, err := New(ref, compGroup, NewResults(10, 20, 0))
+	_, err := New(ref, compGroup, NewResults(10, 20, 0), 1)
 	if err == nil {
 		t.Fatalf("Expected error with length mismatch of comparison and reference time series")
 	}
@@ -154,10 +152,8 @@ func BenchmarkMuseRun(b *testing.B) {
 		b.Fatalf("%v", err)
 	}
 
-	Concurrency = 10
-
 	for i := 0; i < b.N; i++ {
-		g, err := New(ref, compGroup, NewResults(10, 20, 0))
+		g, err := New(ref, compGroup, NewResults(10, 20, 0), 10)
 		if err != nil {
 			b.Fatalf("%v\n", err)
 		}
@@ -184,10 +180,8 @@ func BenchmarkMuseRunLarge(b *testing.B) {
 		}
 	}
 
-	Concurrency = 10
-
 	for i := 0; i < b.N; i++ {
-		g, err := New(ref, compGroup, NewResults(10, 20, 0))
+		g, err := New(ref, compGroup, NewResults(10, 20, 0), 10)
 		if err != nil {
 			b.Fatalf("%+v\n", err)
 		}

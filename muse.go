@@ -9,28 +9,32 @@ import (
 	"gonum.org/v1/gonum/fourier"
 )
 
-var (
-	// Concurrency sets the amount of parallelism while running cross correlations
-	Concurrency = 1
-)
-
 // Muse is the primary struct to setup and run a z-normalized cross correlation between a
 // reference series against each individual comparison series while tracking the resulting scores
 type Muse struct {
-	Reference  *Series
-	Comparison *Group
-	Results    *Results
+	Reference   *Series
+	Comparison  *Group
+	Results     *Results
+	Concurrency int
 }
 
 // New creates a new Muse instance with a set reference timeseries, a
 // comparison group of timeseries, and results
-func New(ref *Series, comp *Group, results *Results) (*Muse, error) {
+func New(ref *Series, comp *Group, results *Results, cc int) (*Muse, error) {
 	for uid, s := range comp.registry {
 		if ref.Length() != s.Length() {
 			return nil, fmt.Errorf("%s from comparison group series does not have the same length as the reference", uid)
 		}
 	}
-	return &Muse{Reference: ref, Comparison: comp, Results: results}, nil
+	if cc < 1 {
+		cc = 1
+	}
+	return &Muse{
+		Reference:   ref,
+		Comparison:  comp,
+		Results:     results,
+		Concurrency: cc,
+	}, nil
 }
 
 // scoreSingle calculates the highest score for a single set of label values given
@@ -97,7 +101,7 @@ func (m *Muse) Run(groupByLabels []string) error {
 
 	// Sem channel is used to rate limit the number of concurrent go routines for cross
 	// correlation comparison
-	var sem = make(chan struct{}, Concurrency)
+	var sem = make(chan struct{}, m.Concurrency)
 	var graphIdx int
 
 	// Iterate over all the comparison graphs and determines the highest score a graph has
