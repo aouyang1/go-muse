@@ -48,18 +48,6 @@ func (l *Labels) Get(key string) (string, bool) {
 	return "", false
 }
 
-/*
-// Keys returns the sorted slice of label names
-func (l Labels) Keys() []string {
-	keys := make([]string, 0, l.Len())
-	for k := range l.Labels() {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	return keys
-}
-*/
-
 // ID constructs the unique identifier based on an input set of labels.
 // This does not have to be all the unique label names. Format will have the
 // following "key1:val1,key2:val2" and so on
