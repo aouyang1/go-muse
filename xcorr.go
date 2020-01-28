@@ -109,13 +109,21 @@ func xCorr(x []float64, y []float64, n int, normalize bool) ([]float64, int, flo
 		var err error
 		x, err = zNormalize(x)
 		if err != nil {
+			if err.Error() == errStdDevZero.Error() {
+				return nil, 0, 0
+			}
+			// Unknown error from zNormalize
 			log.Printf("%+v\n", err)
-			return make([]float64, n), 0, 0
+			return nil, 0, 0
 		}
 		y, err = zNormalize(y)
 		if err != nil {
+			if err.Error() == errStdDevZero.Error() {
+				return nil, 0, 0
+			}
+			// Unknown error from zNormalize
 			log.Printf("%+v\n", err)
-			return make([]float64, n), 0, 0
+			return nil, 0, 0
 		}
 	}
 	x = zeroPad(x, n)
@@ -153,8 +161,12 @@ func xCorrWithX(X []complex128, y []float64, ft *fourier.FFT) ([]float64, int, f
 	n := ft.Len()
 	y, err = zNormalize(y)
 	if err != nil {
+		if err.Error() == errStdDevZero.Error() {
+			return nil, 0, 0
+		}
+		// Unknown error from zNormalize
 		log.Printf("%+v\n", err)
-		return make([]float64, n), 0, 0
+		return nil, 0, 0
 	}
 	y = zeroPad(y, n)
 

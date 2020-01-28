@@ -84,7 +84,7 @@ func (m *Muse) Run(groupByLabels []string) error {
 	ft := fourier.NewFFT(n)
 	x, err := zNormalize(m.Reference.Values())
 	if err != nil {
-		return err
+		return fmt.Errorf("Invalid input query, %v", err)
 	}
 	floats.Scale(1/float64(len(x)-1), x)
 	x = zeroPad(x, n)

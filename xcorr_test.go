@@ -177,7 +177,7 @@ func TestXCorr(t *testing.T) {
 			[]float64{0, 0, 2, 2, 0},
 			[]float64{3, 3, 3, 3, 3},
 			true,
-			[]float64{0, 0, 0, 0, 0},
+			nil,
 			0,
 			func(x float64) bool { return x == 0 },
 		},
@@ -248,7 +248,7 @@ func TestXCorrWithX(t *testing.T) {
 		{
 			[]float64{0, 0, 2, 2, 0},
 			[]float64{3, 3, 3, 3, 3},
-			[]float64{0, 0, 0, 0, 0},
+			nil,
 			0,
 			func(x float64) bool { return x == 0 },
 		},
