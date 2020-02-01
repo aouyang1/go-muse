@@ -50,7 +50,7 @@ func Example() {
 	maxLag := 15.0   // minutes
 	topN := 4        // top 4 grouped series
 	threshold := 0.0 // correlation threshold
-	m, err := New(ref, comp, NewResults(int(maxLag/sampleRate), topN, threshold), 2)
+	m, err := NewBatch(ref, comp, NewResults(int(maxLag/sampleRate), topN, threshold), 2)
 	if err != nil {
 		panic(err)
 	}

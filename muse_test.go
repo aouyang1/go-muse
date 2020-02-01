@@ -63,7 +63,7 @@ func TestRunSimple(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 
-	g, err := New(ref, compGroup, NewResults(10, 20, 0), 10)
+	g, err := NewBatch(ref, compGroup, NewResults(10, 20, 0), 10)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
@@ -101,7 +101,7 @@ func TestRunMultiDimensional(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 
-	m, err := New(ref, compGroup, NewResults(10, 20, 0), 10)
+	m, err := NewBatch(ref, compGroup, NewResults(10, 20, 0), 10)
 	if err != nil {
 		t.Fatalf("%+v\n", err)
 	}
@@ -125,13 +125,13 @@ func TestRunWithLargerGroup(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 
-	_, err := New(ref, compGroup, NewResults(10, 20, 0), 1)
+	_, err := NewBatch(ref, compGroup, NewResults(10, 20, 0), 1)
 	if err == nil {
 		t.Fatalf("Expected error with length mismatch of comparison and reference time series")
 	}
 }
 
-func BenchmarkMuseRun(b *testing.B) {
+func BenchmarkMuseBatchRun(b *testing.B) {
 
 	ref := NewSeries(
 		[]float64{0.0, 0.0, 0.0, 0.0, 0.1, 0.2, 0.3, 0.4},
@@ -153,7 +153,7 @@ func BenchmarkMuseRun(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		g, err := New(ref, compGroup, NewResults(10, 20, 0), 10)
+		g, err := NewBatch(ref, compGroup, NewResults(10, 20, 0), 10)
 		if err != nil {
 			b.Fatalf("%v\n", err)
 		}
@@ -161,7 +161,7 @@ func BenchmarkMuseRun(b *testing.B) {
 	}
 }
 
-func BenchmarkMuseRunLarge(b *testing.B) {
+func BenchmarkMuseBatchRunLarge(b *testing.B) {
 	n := 480
 	ref := NewSeries(siggen.Noise(0.1, n), nil)
 
@@ -181,7 +181,7 @@ func BenchmarkMuseRunLarge(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		g, err := New(ref, compGroup, NewResults(10, 20, 0), 10)
+		g, err := NewBatch(ref, compGroup, NewResults(10, 20, 0), 10)
 		if err != nil {
 			b.Fatalf("%+v\n", err)
 		}
