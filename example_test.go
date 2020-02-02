@@ -60,7 +60,7 @@ func Example() {
 	res, _ := m.Results.Fetch()
 	fmt.Println("Unique")
 	for _, s := range res {
-		fmt.Printf("%s, Lag: %d, Score: %d\n", s.Labels.ID(s.Labels.Keys()), s.Lag, s.PercentScore)
+		fmt.Printf("%s, Lag: %d, Score: %.3f\n", s.Labels.ID(s.Labels.Keys()), s.Lag, s.PercentScore)
 	}
 
 	// Rank time series grouped by the graph label
@@ -68,7 +68,7 @@ func Example() {
 	res, _ = m.Results.Fetch()
 	fmt.Println("By Graph")
 	for _, s := range res {
-		fmt.Printf("%s, Lag: %d, Score: %d\n", s.Labels.ID(s.Labels.Keys()), s.Lag, s.PercentScore)
+		fmt.Printf("%s, Lag: %d, Score: %.3f\n", s.Labels.ID(s.Labels.Keys()), s.Lag, s.PercentScore)
 	}
 
 	// Rank time series grouped by the host label
@@ -76,19 +76,19 @@ func Example() {
 	res, _ = m.Results.Fetch()
 	fmt.Println("By Host")
 	for _, s := range res {
-		fmt.Printf("%s, Lag: %d, Score: %d\n", s.Labels.ID(s.Labels.Keys()), s.Lag, s.PercentScore)
+		fmt.Printf("%s, Lag: %d, Score: %.3f\n", s.Labels.ID(s.Labels.Keys()), s.Lag, s.PercentScore)
 	}
 
 	// Output: Unique
-	// graph:CallTime99Pct,host:host1, Lag: 0, Score: 100
-	// graph:ErrorRate,host:host1, Lag: 0, Score: 99
-	// graph:CallTime99Pct,host:host2, Lag: -3, Score: 82
-	// graph:ErrorRate,host:host3, Lag: 0, Score: 0
+	// graph:CallTime99Pct,host:host1, Lag: 0, Score: 1.000
+	// graph:ErrorRate,host:host1, Lag: 0, Score: 0.991
+	// graph:CallTime99Pct,host:host2, Lag: -3, Score: 0.822
+	// graph:ErrorRate,host:host3, Lag: 0, Score: 0.000
 	// By Graph
-	// graph:CallTime99Pct,host:host1, Lag: 0, Score: 100
-	// graph:ErrorRate,host:host1, Lag: 0, Score: 99
+	// graph:CallTime99Pct,host:host1, Lag: 0, Score: 1.000
+	// graph:ErrorRate,host:host1, Lag: 0, Score: 0.991
 	// By Host
-	// graph:CallTime99Pct,host:host1, Lag: 0, Score: 100
-	// graph:CallTime99Pct,host:host2, Lag: -3, Score: 82
-	// graph:ErrorRate,host:host3, Lag: 0, Score: 0
+	// graph:CallTime99Pct,host:host1, Lag: 0, Score: 1.000
+	// graph:CallTime99Pct,host:host2, Lag: -3, Score: 0.822
+	// graph:ErrorRate,host:host3, Lag: 0, Score: 0.000
 }

@@ -66,7 +66,7 @@ func conj(x []complex128) {
 	}
 }
 
-// zeroPad re-slices the input array to a size n leaving trailing zeroes
+// zeroPad re-slices the input array to a size n with leading zeroes
 func zeroPad(x []float64, n int) []float64 {
 	if n < len(x) {
 		return x

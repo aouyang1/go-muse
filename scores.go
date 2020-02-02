@@ -7,7 +7,7 @@ type Scores []Score
 type Score struct {
 	Labels       *Labels `json:"labels"`
 	Lag          int     `json:"lag"`
-	PercentScore int     `json:"percentScore"`
+	PercentScore float64 `json:"percentScore"`
 }
 
 func (s Scores) Len() int {

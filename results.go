@@ -58,7 +58,7 @@ func (r *Results) Update(s Score) {
 func (r *Results) Fetch() (Scores, float64) {
 	s := make(Scores, len(r.scores))
 	var score Score
-	var scoreSum int
+	var scoreSum float64
 	numScores := len(r.scores)
 
 	for i := numScores - 1; i >= 0; i-- {
@@ -66,5 +66,5 @@ func (r *Results) Fetch() (Scores, float64) {
 		scoreSum += score.PercentScore
 		s[i] = score
 	}
-	return s, float64(scoreSum) / float64(numScores)
+	return s, scoreSum / float64(numScores)
 }

@@ -8,8 +8,10 @@ usage:
 all: test bench example
 
 test:
-	go test -race -cover -run=Test ./...
+	go test -race -coverprofile=coverage.txt -covermode=atomic -cover -run=Test ./...
 
+cover:
+	go tool cover -html=coverage.txt
 bench:
 	go test ./... -run=XX -bench=. -test.benchmem
 

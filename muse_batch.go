@@ -1,7 +1,6 @@
 package muse
 
 import (
-	"container/heap"
 	"fmt"
 	"math"
 
@@ -9,10 +8,11 @@ import (
 	"gonum.org/v1/gonum/fourier"
 )
 
-// MuseBatch is the primary struct to setup and run a z-normalized cross correlation between a
+// Batch is used to setup and run a z-normalized cross correlation between a
 // reference series against each individual comparison series while tracking the resulting scores
-type MuseBatch struct {
-	Reference   *Series
+type Batch struct {
+	n           int
+	x           []complex128
 	Comparison  *Group
 	Results     *Results
 	Concurrency int
@@ -20,7 +20,7 @@ type MuseBatch struct {
 
 // NewBatch creates a new Muse instance with a set reference timeseries, a
 // comparison group of timeseries, and results
-func NewBatch(ref *Series, comp *Group, results *Results, cc int) (*MuseBatch, error) {
+func NewBatch(ref *Series, comp *Group, results *Results, cc int) (*Batch, error) {
 	for uid, s := range comp.registry {
 		if ref.Length() != s.Length() {
 			return nil, fmt.Errorf("%s from comparison group series does not have the same length as the reference", uid)
@@ -29,8 +29,22 @@ func NewBatch(ref *Series, comp *Group, results *Results, cc int) (*MuseBatch, e
 	if cc < 1 {
 		cc = 1
 	}
-	return &MuseBatch{
-		Reference:   ref,
+
+	// Find the next power 2 that's at least twice as long as the the number of values
+	// in the reference time series
+	n := calculateN(ref.Length())
+
+	ft := fourier.NewFFT(n)
+	x, err := zNormalize(ref.Values())
+	if err != nil {
+		return nil, fmt.Errorf("Invalid input query, %v", err)
+	}
+	floats.Scale(1/float64(len(x)-1), x)
+	x = zeroPad(x, n)
+
+	return &Batch{
+		n:           n,
+		x:           ft.Coefficients(nil, x),
 		Comparison:  comp,
 		Results:     results,
 		Concurrency: cc,
@@ -39,15 +53,15 @@ func NewBatch(ref *Series, comp *Group, results *Results, cc int) (*MuseBatch, e
 
 // scoreSingle calculates the highest score for a single set of label values given
 // a reference time series
-func (m *MuseBatch) scoreSingle(idx int, refFT []complex128, labelValues *Labels, n int, sem chan struct{}, graphScores []chan Score) {
+func (b *Batch) scoreSingle(idx int, labelValues *Labels, sem chan struct{}, graphScores []chan Score) {
 	var compScore Score
 	var maxVal float64
 	var lag int
 
 	maxScore := Score{}
-	ft := fourier.NewFFT(n)
+	ft := fourier.NewFFT(b.n)
 
-	compGraphs := m.Comparison.FilterByLabelValues(labelValues)
+	compGraphs := b.Comparison.FilterByLabelValues(labelValues)
 	// for each time series, store the time series with highest relationship
 	// with the reference time series
 	for _, compTs := range compGraphs {
@@ -55,11 +69,11 @@ func (m *MuseBatch) scoreSingle(idx int, refFT []complex128, labelValues *Labels
 		// comparison time series. boolean value specifies that we are normalizing
 		// the the time series so that the power of of the reference and comparison
 		// is equivalent. output value will range between 0 and 1 due to normalizing
-		_, lag, maxVal = xCorrWithX(refFT, compTs.Values(), ft)
+		_, lag, maxVal = xCorrWithX(b.x, compTs.Values(), ft)
 		compScore = Score{
 			Labels:       compTs.Labels(),
 			Lag:          lag,
-			PercentScore: int(math.Abs(maxVal*100) + 0.5),
+			PercentScore: math.Abs(maxVal),
 		}
 
 		// retain the score if it's the highest recorded scoring time series for the
@@ -76,20 +90,7 @@ func (m *MuseBatch) scoreSingle(idx int, refFT []complex128, labelValues *Labels
 // series and a group of comparison time series. Number of scores will be the number
 // of unique labels specified in the input. If no groupByLabels is specified, then
 // each timeseries will receive its own score.
-func (m *MuseBatch) Run(groupByLabels []string) error {
-	// Find the next power 2 that's at least twice as long as the the number of values
-	// in the reference time series
-	n := calculateN(m.Reference.Length())
-
-	ft := fourier.NewFFT(n)
-	x, err := zNormalize(m.Reference.Values())
-	if err != nil {
-		return fmt.Errorf("Invalid input query, %v", err)
-	}
-	floats.Scale(1/float64(len(x)-1), x)
-	x = zeroPad(x, n)
-	refFT := ft.Coefficients(nil, x)
-
+func (m *Batch) Run(groupByLabels []string) error {
 	labelValuesSet := m.Comparison.indexLabelValues(groupByLabels)
 
 	// Slice of score channels will handle the output of the concurrent cross correlation
@@ -109,28 +110,15 @@ func (m *MuseBatch) Run(groupByLabels []string) error {
 	for _, lv := range labelValuesSet {
 		select {
 		case sem <- struct{}{}:
-			go m.scoreSingle(graphIdx, refFT, lv, n, sem, graphScores)
+			go m.scoreSingle(graphIdx, lv, sem, graphScores)
 			graphIdx++
 		}
 	}
 
-	// Build priority queue of size TopN so that we don't have to sort over the entire
-	// score output
-	heap.Init(&m.Results.scores)
-
 	var s Score
 	for _, scoreCh := range graphScores {
 		s = <-scoreCh
-		if m.Results.passed(s) {
-			if m.Results.scores.Len() == m.Results.TopN {
-				if s.PercentScore > m.Results.scores[0].PercentScore {
-					heap.Pop(&m.Results.scores)
-					heap.Push(&m.Results.scores, s)
-				}
-			} else {
-				heap.Push(&m.Results.scores, s)
-			}
-		}
+		m.Results.Update(s)
 	}
 	return nil
 }
