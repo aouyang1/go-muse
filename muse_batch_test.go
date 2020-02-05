@@ -151,7 +151,7 @@ func BenchmarkMuseBatchRunLarge(b *testing.B) {
 	}
 
 	for i := 0; i < b.N; i++ {
-		g, err := NewBatch(ref, compGroup, NewResults(10, 20, 0), 1)
+		g, err := NewBatch(ref, compGroup, NewResults(10, 20, 0), 100)
 		if err != nil {
 			b.Fatalf("%+v\n", err)
 		}

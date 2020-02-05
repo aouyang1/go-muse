@@ -2,6 +2,7 @@ package muse
 
 import (
 	"math"
+	"sync"
 	"testing"
 
 	"github.com/matrix-profile-foundation/go-matrixprofile/siggen"
@@ -130,9 +131,15 @@ func BenchmarkMuseRunLarge(b *testing.B) {
 	if err != nil {
 		b.Fatalf("%+v\n", err)
 	}
+	var wg sync.WaitGroup
 	for i := 0; i < b.N; i++ {
+		wg.Add(len(comp))
 		for _, c := range comp {
-			g.Run(c)
+			go func(cc []*Series) {
+				defer wg.Done()
+				g.Run(cc)
+			}(c)
 		}
+		wg.Wait()
 	}
 }
