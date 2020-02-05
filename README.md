@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 # go-muse
-Golang library for comparing one time series with a group of other labeled time series. This library supports arbitrary slicing and dicing of the labeled time series for a more iterative approach to finding visibly similar timeseries. Comparison between two timeseries is done with z-normalizing both series and cross correlating the two using Fast Fourier Transforms (FFT). This library also support parallelization by setting the `Concurrency` variable in the package.
+Golang library for comparing one time series with a group of other labeled time series. This library supports arbitrary slicing and dicing of the labeled time series for a more iterative approach to finding visibly similar timeseries. Comparison between two timeseries is done by z-normalizing both series and cross correlating the two using Fast Fourier Transforms (FFT).
 
 ### Motivation
 A common problem in the operations world is finding all the graphs that look like a particular alert or incident. For example a Site Reliability Engineer (SRE) receives an alert which indicates that something is broken. The SRE generally will open up the graph that triggered the alert which is likely one graph of many in a dashboard. Next, the SRE begins scrolling through this dashboard looking for anything that resembles the waveform of the received alert. Once the SRE has filtered down the set of graphs that looks the original alert graph, he/she begins building a story as to why the alert fired and root causing the incident. This whole process can be time consuming depending on the size and complexity of the dashboards. This library aims to provide a first pass filtering of the existing graphs or time series, so that an engineer can focus just on what looks similar.
@@ -79,7 +79,7 @@ func main() {
 	maxLag := 15.0   // minutes
 	topN := 4        // top 4 grouped series
 	threshold := 0.5 // correlation threshold
-	m := New(ref, comp, NewResults(int(maxLag/sampleRate), topN, threshold))
+	m := NewBatch(ref, comp, NewResults(int(maxLag/sampleRate), topN, threshold))
 
 	// Rank each individual time series in the comparison group
 	m.Run(nil)
