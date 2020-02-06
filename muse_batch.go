@@ -95,8 +95,8 @@ func (b *Batch) scoreSingle(idx int, labelValues *Labels, sem chan struct{}, gra
 // series and a group of comparison time series. Number of scores will be the number
 // of unique labels specified in the input. If no groupByLabels is specified, then
 // each timeseries will receive its own score.
-func (m *Batch) Run(groupByLabels []string) error {
-	labelValuesSet := m.Comparison.indexLabelValues(groupByLabels)
+func (b *Batch) Run(groupByLabels []string) error {
+	labelValuesSet := b.Comparison.indexLabelValues(groupByLabels)
 
 	// Slice of score channels will handle the output of the concurrent cross correlation
 	// comparison
@@ -107,7 +107,7 @@ func (m *Batch) Run(groupByLabels []string) error {
 
 	// Sem channel is used to rate limit the number of concurrent go routines for cross
 	// correlation comparison
-	var sem = make(chan struct{}, m.Concurrency)
+	var sem = make(chan struct{}, b.Concurrency)
 	var graphIdx int
 
 	// Iterate over all the comparison graphs and determines the highest score a graph has
@@ -115,7 +115,7 @@ func (m *Batch) Run(groupByLabels []string) error {
 	for _, lv := range labelValuesSet {
 		select {
 		case sem <- struct{}{}:
-			go m.scoreSingle(graphIdx, lv, sem, graphScores)
+			go b.scoreSingle(graphIdx, lv, sem, graphScores)
 			graphIdx++
 		}
 	}
@@ -123,7 +123,7 @@ func (m *Batch) Run(groupByLabels []string) error {
 	var s Score
 	for _, scoreCh := range graphScores {
 		s = <-scoreCh
-		m.Results.Update(s)
+		b.Results.Update(s)
 	}
 	return nil
 }
