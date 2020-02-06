@@ -23,7 +23,7 @@ func New(ref *Series, results *Results) (*Muse, error) {
 	if ref.Length() < 1 {
 		return nil, errors.New("Reference series length must be greater than zero")
 	}
-	n := calculateN(ref.Length())
+	n := nextPowOf2(float64(ref.Length()))
 	ft := fourier.NewFFT(n)
 	x, err := zNormalize(ref.Values())
 	if err != nil {
@@ -57,10 +57,15 @@ func (m *Muse) Run(compGraphs []*Series) error {
 		// the the time series so that the power of of the reference and comparison
 		// is equivalent. output value will range between 0 and 1 due to normalizing
 		_, lag, maxVal = xCorrWithX(m.x, compTs.Values(), ft)
+		maxVal = math.Abs(maxVal)
+		if maxVal > 1.0 {
+			maxVal = 1.0
+		}
+
 		compScore = Score{
 			Labels:       compTs.Labels(),
 			Lag:          lag,
-			PercentScore: math.Abs(maxVal),
+			PercentScore: maxVal,
 		}
 
 		// retain the score if it's the highest recorded scoring time series for the
@@ -71,14 +76,4 @@ func (m *Muse) Run(compGraphs []*Series) error {
 	}
 	m.Results.Update(maxScore)
 	return nil
-}
-
-func calculateN(refLen int) int {
-	n := nextPowOf2(float64(refLen))
-	/*
-		if n < 2*refLen {
-			n = nextPowOf2(float64(n + 1))
-		}
-	*/
-	return n
 }

@@ -35,7 +35,7 @@ func NewResults(maxLag int, topN int, threshold float64) *Results {
 // passed checks if the input score satisfies the Results lag and threshold requirements
 func (r *Results) passed(s Score) bool {
 	return math.Abs(float64(s.Lag)) <= float64(r.MaxLag) &&
-		math.Abs(float64(s.PercentScore)) >= r.Threshold*100
+		math.Abs(float64(s.PercentScore)) >= r.Threshold
 }
 
 // Update records the input score

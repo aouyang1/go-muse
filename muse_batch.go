@@ -30,9 +30,9 @@ func NewBatch(ref *Series, comp *Group, results *Results, cc int) (*Batch, error
 		cc = 1
 	}
 
-	// Find the next power 2 that's at least twice as long as the the number of values
-	// in the reference time series
-	n := calculateN(ref.Length())
+	// Find the next power 2 which only permits measuring lag of at most half the
+	// reference time series
+	n := nextPowOf2(float64(ref.Length()))
 
 	ft := fourier.NewFFT(n)
 	x, err := zNormalize(ref.Values())
@@ -70,10 +70,15 @@ func (b *Batch) scoreSingle(idx int, labelValues *Labels, sem chan struct{}, gra
 		// the the time series so that the power of of the reference and comparison
 		// is equivalent. output value will range between 0 and 1 due to normalizing
 		_, lag, maxVal = xCorrWithX(b.x, compTs.Values(), ft)
+		maxVal = math.Abs(maxVal)
+		if maxVal > 1.0 {
+			maxVal = 1.0
+		}
+
 		compScore = Score{
 			Labels:       compTs.Labels(),
 			Lag:          lag,
-			PercentScore: math.Abs(maxVal),
+			PercentScore: maxVal,
 		}
 
 		// retain the score if it's the highest recorded scoring time series for the
