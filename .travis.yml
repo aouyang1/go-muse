@@ -6,7 +6,7 @@ env:
 script: make travis-ci
 
 go:
-  - "1.12"
+  - "1.13"
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
