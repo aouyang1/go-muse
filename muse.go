@@ -48,6 +48,8 @@ func (m *Muse) Run(compGraphs []*Series) error {
 
 	maxScore := Score{}
 	ft := fourier.NewFFT(m.n)
+	coefScratch := make([]complex128, m.n/2+1)
+	seqScratch := make([]float64, m.n)
 
 	// for each time series, store the time series with highest relationship
 	// with the reference time series
@@ -56,7 +58,7 @@ func (m *Muse) Run(compGraphs []*Series) error {
 		// comparison time series. boolean value specifies that we are normalizing
 		// the the time series so that the power of of the reference and comparison
 		// is equivalent. output value will range between 0 and 1 due to normalizing
-		_, lag, maxVal = xCorrWithX(m.x, compTs.Values(), ft)
+		_, lag, maxVal = xCorrWithX(m.x, compTs.Values(), ft, coefScratch, seqScratch)
 		maxVal = math.Abs(maxVal)
 		if maxVal > 1.0 {
 			maxVal = 1.0

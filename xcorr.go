@@ -155,7 +155,7 @@ func xCorr(x []float64, y []float64, n int, normalize bool) ([]float64, int, flo
 // xCorrWithX allows a precomputed FFT of X to be passed in for the purposes of batch
 // execution and not repeatedly calculating FFT(x). Must pass in the fourier transform
 // struct used to compute X.
-func xCorrWithX(X []complex128, y []float64, ft *fourier.FFT) ([]float64, int, float64) {
+func xCorrWithX(X []complex128, y []float64, ft *fourier.FFT, coefScratch []complex128, seqScratch []float64) ([]float64, int, float64) {
 	var err error
 
 	n := ft.Len()
@@ -170,10 +170,10 @@ func xCorrWithX(X []complex128, y []float64, ft *fourier.FFT) ([]float64, int, f
 	}
 	y = zeroPad(y, n)
 
-	C := ft.Coefficients(nil, y)
+	C := ft.Coefficients(coefScratch, y)
 	conj(C)
 	mult(C, X)
-	cc := ft.Sequence(nil, C)
+	cc := ft.Sequence(seqScratch, C)
 	floats.Scale(1.0/float64(n), cc)
 
 	mi := maxAbsIndex(cc)
