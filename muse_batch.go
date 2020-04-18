@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math"
 
+	"gonum.org/v1/gonum/dsp/fourier"
 	"gonum.org/v1/gonum/floats"
-	"gonum.org/v1/gonum/fourier"
 )
 
 // Batch is used to setup and run a z-normalized cross correlation between a
@@ -60,7 +60,8 @@ func (b *Batch) scoreSingle(idx int, labelValues *Labels, sem chan struct{}, gra
 
 	maxScore := Score{}
 	ft := fourier.NewFFT(b.n)
-
+	coefScratch := make([]complex128, b.n/2+1)
+	seqScratch := make([]float64, b.n)
 	compGraphs := b.Comparison.FilterByLabelValues(labelValues)
 	// for each time series, store the time series with highest relationship
 	// with the reference time series
@@ -69,7 +70,7 @@ func (b *Batch) scoreSingle(idx int, labelValues *Labels, sem chan struct{}, gra
 		// comparison time series. boolean value specifies that we are normalizing
 		// the the time series so that the power of of the reference and comparison
 		// is equivalent. output value will range between 0 and 1 due to normalizing
-		_, lag, maxVal = xCorrWithX(b.x, compTs.Values(), ft)
+		_, lag, maxVal = xCorrWithX(b.x, compTs.Values(), ft, coefScratch, seqScratch)
 		maxVal = math.Abs(maxVal)
 		if maxVal > 1.0 {
 			maxVal = 1.0
