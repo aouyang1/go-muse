@@ -7,8 +7,8 @@ import (
 	"math"
 	"math/cmplx"
 
+	"gonum.org/v1/gonum/dsp/fourier"
 	"gonum.org/v1/gonum/floats"
-	"gonum.org/v1/gonum/fourier"
 	"gonum.org/v1/gonum/stat"
 )
 
@@ -28,7 +28,7 @@ func prettyClose(a, b []float64) bool {
 		return false
 	}
 	for i, v := range a {
-		if math.Abs(v-b[i]) > 1E-8 {
+		if math.Abs(v-b[i]) > 1e-8 {
 			return false
 		}
 	}

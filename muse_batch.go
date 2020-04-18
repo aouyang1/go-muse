@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math"
 
+	"gonum.org/v1/gonum/dsp/fourier"
 	"gonum.org/v1/gonum/floats"
-	"gonum.org/v1/gonum/fourier"
 )
 
 // Batch is used to setup and run a z-normalized cross correlation between a

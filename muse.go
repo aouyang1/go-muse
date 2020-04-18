@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math"
 
+	"gonum.org/v1/gonum/dsp/fourier"
 	"gonum.org/v1/gonum/floats"
-	"gonum.org/v1/gonum/fourier"
 )
 
 // Muse is the primary struct to setup and run a z-normalized cross correlation between a

@@ -5,8 +5,8 @@ import (
 	"math/rand"
 	"testing"
 
+	"gonum.org/v1/gonum/dsp/fourier"
 	"gonum.org/v1/gonum/floats"
-	"gonum.org/v1/gonum/fourier"
 )
 
 func isPositive() func(float64) bool {
@@ -53,7 +53,7 @@ func TestZNormalize(t *testing.T) {
 		for i := 0; i < len(d.ts); i++ {
 			ssum += d.ts[i] * d.ts[i]
 		}
-		if math.Abs(ssum-float64(len(d.ts)-1)) > 1E-8 {
+		if math.Abs(ssum-float64(len(d.ts)-1)) > 1e-8 {
 			t.Errorf("Expected a squared sum of %d, but got %.3f for %v", len(d.ts), ssum, d.ts)
 		}
 	}
