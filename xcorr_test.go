@@ -286,14 +286,22 @@ func TestXCorrWithX(t *testing.T) {
 }
 
 func BenchmarkZPad(b *testing.B) {
-	x := []float64{1, 2, 3, 4}
+	x := make([]float64, 480)
+	for i := 0; i < len(x); i++ {
+		x[i] = rand.Float64()
+	}
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		zeroPad(x, 10)
+		zeroPad(x, 512)
 	}
 }
 
 func BenchmarkZNormalize(b *testing.B) {
-	x := []float64{1, 2, 3, 4}
+	x := make([]float64, 512)
+	for i := 0; i < len(x); i++ {
+		x[i] = rand.Float64()
+	}
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		zNormalize(x)
 	}
@@ -333,6 +341,7 @@ func BenchmarkXCorrWithX(b *testing.B) {
 	coefScratch := make([]complex128, n/2+1)
 	seqScratch := make([]float64, n)
 
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		xCorrWithX(X, y, ftY, coefScratch, seqScratch)
 	}

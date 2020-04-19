@@ -170,9 +170,17 @@ func xCorrWithX(X []complex128, y []float64, ft *fourier.FFT, coefScratch []comp
 		log.Printf("%+v\n", err)
 		return nil, 0, 0
 	}
-	y = zeroPad(y, n)
 
-	C := ft.Coefficients(coefScratch, y)
+	// create leading zeroes and copy the y data into the end of the seq scratch buffer
+	// this creates a zero padded y by reusing the existing seqScratch buffer
+	for i := 0; i < len(seqScratch)-len(y); i++ {
+		seqScratch[i] = 0
+	}
+	for i := 0; i < len(y); i++ {
+		seqScratch[len(seqScratch)-len(y)+i] = y[i]
+	}
+
+	C := ft.Coefficients(coefScratch, seqScratch)
 	conj(C)
 	mult(C, X)
 	cc := ft.Sequence(seqScratch, C)

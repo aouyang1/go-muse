@@ -126,6 +126,7 @@ func BenchmarkMuseBatchRun(b *testing.B) {
 	if err != nil {
 		b.Fatalf("%v\n", err)
 	}
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		g.Run([]string{"graph"})
 	}
@@ -150,11 +151,12 @@ func BenchmarkMuseBatchRunLarge(b *testing.B) {
 		}
 	}
 
+	g, err := NewBatch(ref, compGroup, NewResults(10, 20, 0), 100)
+	if err != nil {
+		b.Fatalf("%+v\n", err)
+	}
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		g, err := NewBatch(ref, compGroup, NewResults(10, 20, 0), 100)
-		if err != nil {
-			b.Fatalf("%+v\n", err)
-		}
 		g.Run([]string{"graph"})
 	}
 }

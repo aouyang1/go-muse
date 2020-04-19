@@ -12,6 +12,7 @@ import (
 // Muse is the primary struct to setup and run a z-normalized cross correlation between a
 // reference series against an individual comparison series while tracking the resulting scores
 type Muse struct {
+	refN    int          // length of the input reference
 	n       int          // fourier transform length
 	x       []complex128 // z-normalized fourier transform of the reference to be reused
 	Results *Results
@@ -33,6 +34,7 @@ func New(ref *Series, results *Results) (*Muse, error) {
 	x = zeroPad(x, n)
 
 	return &Muse{
+		refN:    ref.Length(),
 		n:       n,
 		x:       ft.Coefficients(nil, x),
 		Results: results,
@@ -58,6 +60,9 @@ func (m *Muse) Run(compGraphs []*Series) error {
 		// comparison time series. boolean value specifies that we are normalizing
 		// the the time series so that the power of of the reference and comparison
 		// is equivalent. output value will range between 0 and 1 due to normalizing
+		if compTs.Length() != m.refN {
+			return fmt.Errorf("Encountered a comparison graph with differing length than the reference, %+v", compTs.Labels())
+		}
 		_, lag, maxVal = xCorrWithX(m.x, compTs.Values(), ft, coefScratch, seqScratch)
 		maxVal = math.Abs(maxVal)
 		if maxVal > 1.0 {

@@ -102,7 +102,7 @@ func BenchmarkMuseRun(b *testing.B) {
 	if err != nil {
 		b.Fatalf("%v\n", err)
 	}
-
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for _, c := range comp {
 			g.Run(c)
@@ -132,6 +132,7 @@ func BenchmarkMuseRunLarge(b *testing.B) {
 		b.Fatalf("%+v\n", err)
 	}
 	var wg sync.WaitGroup
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		wg.Add(len(comp))
 		for _, c := range comp {

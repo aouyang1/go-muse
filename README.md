@@ -98,16 +98,16 @@ func main() {
 ## Benchmarks
 Benchmark name                      | NumReps |    Time/Rep    |   Memory/Rep  |     Alloc/Rep   |
 -----------------------------------:|--------:|---------------:|--------------:|----------------:|
-BenchmarkMuseRun-4                  |   223243|      4515 ns/op|      2064 B/op|     26 allocs/op| 
-BenchmarkMuseRunLarge-4             |        9| 113956001 ns/op|  25155107 B/op|  10420 allocs/op|
-BenchmarkFilterByLabelValues-4      |  1840992|       635 ns/op|       496 B/op|      8 allocs/op|
-BenchmarkIndexLabelValues-4         |   414496|      2921 ns/op|      2152 B/op|     38 allocs/op|
-BenchmarkZPad-4                     | 25136180|      41.3 ns/op|        80 B/op|      1 allocs/op|
-BenchmarkZNormalize-4               | 17526874|      61.6 ns/op|         0 B/op|      0 allocs/op|
-BenchmarkXCorr-4                    |      193|   6101637 ns/op|   2114979 B/op|      7 allocs/op|
-BenchmarkXCorrWithX-4               |      309|   3878212 ns/op|    271582 B/op|      1 allocs/op|
+BenchmarkMuseRun-4                  |   214075|      5019 ns/op|      1680 B/op|     20 allocs/op| 
+BenchmarkMuseRunLarge-4             |        9| 128044546 ns/op|   2124970 B/op|    405 allocs/op|
+BenchmarkFilterByLabelValues-4      |  1736983|       705 ns/op|       496 B/op|      8 allocs/op|
+BenchmarkIndexLabelValues-4         |   354844|      3198 ns/op|      2152 B/op|     38 allocs/op|
+BenchmarkZPad-4                     |  1035133|      1180 ns/op|      4096 B/op|      1 allocs/op|
+BenchmarkZNormalize-4               |   789307|      1287 ns/op|         0 B/op|      0 allocs/op|
+BenchmarkXCorr-4                    |      148|   8228987 ns/op|   2115418 B/op|      7 allocs/op|
+BenchmarkXCorrWithX-4               |      226|   4910405 ns/op|         0 B/op|      0 allocs/op|
 
-Ran on a 2018 MacBookAir on Apr 17, 2020
+Ran on a 2018 MacBookAir on Apr 19, 2020
 ```sh
     Processor: 1.6 GHz Intel Core i5
        Memory: 8GB 2133 MHz LPDDR3
