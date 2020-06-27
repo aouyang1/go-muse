@@ -44,6 +44,11 @@ func New(ref *Series, results *Results) (*Muse, error) {
 // Run compares a single comparison series against the reference series and updates
 // the score results
 func (m *Muse) Run(compGraphs []*Series) error {
+	if len(compGraphs) == 0 {
+		// nothing to compare so don't allocate anything
+		return nil
+	}
+
 	var compScore Score
 	var maxVal float64
 	var lag int

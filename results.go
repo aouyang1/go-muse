@@ -40,6 +40,10 @@ func (r *Results) passed(s Score) bool {
 
 // Update records the input score
 func (r *Results) Update(s Score) {
+	if s.Labels == nil {
+		// invalid score so don't update anything
+		return
+	}
 	r.Lock()
 	if r.passed(s) {
 		if r.scores.Len() == r.TopN {

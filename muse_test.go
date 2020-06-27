@@ -72,6 +72,28 @@ func TestRunSimple(t *testing.T) {
 	compareScores(scores, expectedScores, t)
 }
 
+func TestRunNoInput(t *testing.T) {
+	ref := NewSeries(
+		[]float64{0, 0, 0, 0, 1, 2, 3, 3, 2, 1, 0, 0},
+		NewLabels(LabelMap{"graph": "graph1"}),
+	)
+
+	var comp []*Series
+
+	expectedScores := Scores{}
+
+	g, err := New(ref, NewResults(10, 20, 0))
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	if err := g.Run(comp); err != nil {
+		t.Fatalf("%v", err)
+	}
+
+	scores, _ := g.Results.Fetch()
+	compareScores(scores, expectedScores, t)
+}
+
 func BenchmarkMuseRun(b *testing.B) {
 
 	ref := NewSeries(
