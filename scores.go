@@ -1,5 +1,9 @@
 package muse
 
+import (
+	"math"
+)
+
 // Scores is a slice of individual Score
 type Scores []Score
 
@@ -19,7 +23,7 @@ func (s Scores) Swap(i, j int) {
 }
 
 func (s Scores) Less(i, j int) bool {
-	return s[i].PercentScore < s[j].PercentScore
+	return math.Abs(s[i].PercentScore) < math.Abs(s[j].PercentScore)
 }
 
 // Push implements the function in the heap interface

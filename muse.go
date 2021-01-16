@@ -69,9 +69,10 @@ func (m *Muse) Run(compGraphs []*Series) error {
 			return fmt.Errorf("Encountered a comparison graph with differing length than the reference, %+v", compTs.Labels())
 		}
 		_, lag, maxVal = xCorrWithX(m.x, compTs.Values(), ft, coefScratch, seqScratch)
-		maxVal = math.Abs(maxVal)
 		if maxVal > 1.0 {
 			maxVal = 1.0
+		} else if maxVal < -1.0 {
+			maxVal = -1.0
 		}
 
 		compScore = Score{
@@ -82,7 +83,7 @@ func (m *Muse) Run(compGraphs []*Series) error {
 
 		// retain the score if it's the highest recorded scoring time series for the
 		// current graph
-		if compScore.PercentScore > maxScore.PercentScore || maxScore.Labels == nil {
+		if math.Abs(compScore.PercentScore) > math.Abs(maxScore.PercentScore) || maxScore.Labels == nil {
 			maxScore = compScore
 		}
 	}

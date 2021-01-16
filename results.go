@@ -47,7 +47,7 @@ func (r *Results) Update(s Score) {
 	r.Lock()
 	if r.passed(s) {
 		if r.scores.Len() == r.TopN {
-			if s.PercentScore > r.scores[0].PercentScore {
+			if math.Abs(s.PercentScore) > math.Abs(r.scores[0].PercentScore) {
 				heap.Pop(&r.scores)
 				heap.Push(&r.scores, s)
 			}
@@ -58,7 +58,7 @@ func (r *Results) Update(s Score) {
 	r.Unlock()
 }
 
-// Fetch returns the sorted scores in ascending order along with the average percent score
+// Fetch returns the sorted scores in ascending order along with the average absolute percent score
 func (r *Results) Fetch() (Scores, float64) {
 	s := make(Scores, len(r.scores))
 	var score Score
@@ -67,7 +67,7 @@ func (r *Results) Fetch() (Scores, float64) {
 
 	for i := numScores - 1; i >= 0; i-- {
 		score = heap.Pop(&r.scores).(Score)
-		scoreSum += score.PercentScore
+		scoreSum += math.Abs(score.PercentScore)
 		s[i] = score
 	}
 	return s, scoreSum / float64(numScores)
