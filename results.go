@@ -10,14 +10,23 @@ import (
 // and score threshold
 type Results struct {
 	sync.Mutex
-	MaxLag    int
-	TopN      int
-	Threshold float64
-	scores    Scores
+	MaxLag     int
+	TopN       int
+	Threshold  float64
+	SignFilter SignFilter
+	scores     Scores
 }
 
+type SignFilter int
+
+const (
+	SignFilter_POS = 1
+	SignFilter_NEG = -1
+	SignFilter_ANY = 0
+)
+
 // NewResults creates a new instance of results to track the top similar graphs
-func NewResults(maxLag int, topN int, threshold float64) *Results {
+func NewResults(maxLag int, topN int, threshold float64, signFilter SignFilter) *Results {
 	scores := make(Scores, 0, topN)
 
 	// Build priority queue of size TopN so that we don't have to sort over the entire
@@ -25,17 +34,21 @@ func NewResults(maxLag int, topN int, threshold float64) *Results {
 	heap.Init(&scores)
 
 	return &Results{
-		MaxLag:    maxLag,
-		TopN:      topN,
-		Threshold: threshold,
-		scores:    scores,
+		MaxLag:     maxLag,
+		TopN:       topN,
+		Threshold:  threshold,
+		SignFilter: signFilter,
+		scores:     scores,
 	}
 }
 
 // passed checks if the input score satisfies the Results lag and threshold requirements
 func (r *Results) passed(s Score) bool {
 	return math.Abs(float64(s.Lag)) <= float64(r.MaxLag) &&
-		math.Abs(float64(s.PercentScore)) >= r.Threshold
+		math.Abs(float64(s.PercentScore)) >= r.Threshold &&
+		(r.SignFilter == SignFilter_ANY ||
+			(s.PercentScore > 0 && r.SignFilter == SignFilter_POS) ||
+			(s.PercentScore < 0 && r.SignFilter == SignFilter_NEG))
 }
 
 // Update records the input score

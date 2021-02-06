@@ -45,11 +45,11 @@ func TestRunSimple(t *testing.T) {
 	)
 
 	comp := [][]*Series{
-		[]*Series{NewSeries([]float64{0, 0, 0, 0, 2, 4, 6, 6, 4, 2, 0, 0}, NewLabels(LabelMap{"graph": "perfectMatch"}))},
-		[]*Series{NewSeries([]float64{0, 0, 0, 0, 2, 4, 6, 4, 2, 0, 0, 0}, NewLabels(LabelMap{"graph": "slightlyLower"}))},
-		[]*Series{NewSeries([]float64{0, 0, 0, 2, 4, 2, 0, 0, 0, 0, 0, 0}, NewLabels(LabelMap{"graph": "evenLower"}))},
-		[]*Series{NewSeries([]float64{0, 0, 0, 0, 0, 0, 0, 0, -2, -3, -2, 0}, NewLabels(LabelMap{"graph": "evenLowerShiftedAhead"}))},
-		[]*Series{NewSeries([]float64{3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, NewLabels(LabelMap{"graph": "zeros"}))},
+		{NewSeries([]float64{0, 0, 0, 0, 2, 4, 6, 6, 4, 2, 0, 0}, NewLabels(LabelMap{"graph": "perfectMatch"}))},
+		{NewSeries([]float64{0, 0, 0, 0, 2, 4, 6, 4, 2, 0, 0, 0}, NewLabels(LabelMap{"graph": "slightlyLower"}))},
+		{NewSeries([]float64{0, 0, 0, 2, 4, 2, 0, 0, 0, 0, 0, 0}, NewLabels(LabelMap{"graph": "evenLower"}))},
+		{NewSeries([]float64{0, 0, 0, 0, 0, 0, 0, 0, -2, -3, -2, 0}, NewLabels(LabelMap{"graph": "evenLowerShiftedAhead"}))},
+		{NewSeries([]float64{3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, NewLabels(LabelMap{"graph": "zeros"}))},
 	}
 
 	expectedScores := Scores{
@@ -60,7 +60,7 @@ func TestRunSimple(t *testing.T) {
 		Score{Labels: NewLabels(LabelMap{"graph": "zeros"}), Lag: 0, PercentScore: 0},
 	}
 
-	g, err := New(ref, NewResults(10, 20, 0))
+	g, err := New(ref, NewResults(10, 20, 0, SignFilter_ANY))
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
@@ -72,6 +72,53 @@ func TestRunSimple(t *testing.T) {
 	compareScores(scores, expectedScores, t)
 }
 
+func TestRunSimpleSignFilter(t *testing.T) {
+	ref := NewSeries(
+		[]float64{0, 0, 0, 0, 1, 2, 3, 3, 2, 1, 0, 0},
+		NewLabels(LabelMap{"graph": "graph1"}),
+	)
+
+	comp := [][]*Series{
+		{NewSeries([]float64{0, 0, 0, 0, 2, 4, 6, 6, 4, 2, 0, 0}, NewLabels(LabelMap{"graph": "perfectMatch"}))},
+		{NewSeries([]float64{0, 0, 0, 0, 2, 4, 6, 4, 2, 0, 0, 0}, NewLabels(LabelMap{"graph": "slightlyLower"}))},
+		{NewSeries([]float64{0, 0, 0, 2, 4, 2, 0, 0, 0, 0, 0, 0}, NewLabels(LabelMap{"graph": "evenLower"}))},
+		{NewSeries([]float64{0, 0, 0, 0, 0, 0, 0, 0, -2, -3, -2, 0}, NewLabels(LabelMap{"graph": "evenLowerShiftedAhead"}))},
+		{NewSeries([]float64{3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, NewLabels(LabelMap{"graph": "zeros"}))},
+	}
+
+	expectedScores := Scores{
+		Score{Labels: NewLabels(LabelMap{"graph": "perfectMatch"}), Lag: 0, PercentScore: 1.000},
+		Score{Labels: NewLabels(LabelMap{"graph": "slightlyLower"}), Lag: 0, PercentScore: 0.929},
+		Score{Labels: NewLabels(LabelMap{"graph": "evenLower"}), Lag: 2, PercentScore: 0.733},
+	}
+
+	g, err := New(ref, NewResults(10, 20, 0, SignFilter_POS))
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	for _, c := range comp {
+		g.Run(c)
+	}
+
+	scores, _ := g.Results.Fetch()
+	compareScores(scores, expectedScores, t)
+
+	expectedScores = Scores{
+		Score{Labels: NewLabels(LabelMap{"graph": "evenLowerShiftedAhead"}), Lag: -2, PercentScore: -0.754},
+	}
+
+	g, err = New(ref, NewResults(10, 20, 0, SignFilter_NEG))
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	for _, c := range comp {
+		g.Run(c)
+	}
+
+	scores, _ = g.Results.Fetch()
+	compareScores(scores, expectedScores, t)
+
+}
 func TestRunNoInput(t *testing.T) {
 	ref := NewSeries(
 		[]float64{0, 0, 0, 0, 1, 2, 3, 3, 2, 1, 0, 0},
@@ -82,7 +129,7 @@ func TestRunNoInput(t *testing.T) {
 
 	expectedScores := Scores{}
 
-	g, err := New(ref, NewResults(10, 20, 0))
+	g, err := New(ref, NewResults(10, 20, 0, SignFilter_ANY))
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
@@ -102,25 +149,25 @@ func BenchmarkMuseRun(b *testing.B) {
 	)
 
 	comp := [][]*Series{
-		[]*Series{
+		{
 			NewSeries([]float64{0.0, 0.0, 0.0, 0.0, 0.1, 0.2, 0.3, 0.4}, NewLabels(LabelMap{"graph": "graph1", "host": "host1"})),
 			NewSeries([]float64{0.2, 0.1, 0.2, 0.1, 0.2, 0.1, 0.2, 0.1}, NewLabels(LabelMap{"graph": "graph1", "host": "host2"})),
 		},
-		[]*Series{
+		{
 			NewSeries([]float64{0.0, 0.0, 0.0, 0.0, 0.2, 0.4, 0.5, 0.8}, NewLabels(LabelMap{"graph": "graph2", "host": "host1"})),
 		},
-		[]*Series{
+		{
 			NewSeries([]float64{0.2, 0.1, 0.2, 0.1, 0.2, 0.1, 0.22, 0.1}, NewLabels(LabelMap{"graph": "graph3", "host": "host1"})),
 		},
-		[]*Series{
+		{
 			NewSeries([]float64{0.0, 0.0, 0.0, 0.0, -0.2, -0.4, 0.0, -0.8}, NewLabels(LabelMap{"graph": "graph4", "host": "host1"})),
 		},
-		[]*Series{
+		{
 			NewSeries([]float64{0.0, 0.0, 0.0, -0.2, -0.4, -0.6, 1.0, 0.0}, NewLabels(LabelMap{"graph": "graph5", "host": "host1"})),
 		},
 	}
 
-	g, err := New(ref, NewResults(10, 20, 0))
+	g, err := New(ref, NewResults(10, 20, 0, SignFilter_ANY))
 	if err != nil {
 		b.Fatalf("%v\n", err)
 	}
@@ -149,7 +196,7 @@ func BenchmarkMuseRunLarge(b *testing.B) {
 		}
 	}
 
-	g, err := New(ref, NewResults(10, 20, 0))
+	g, err := New(ref, NewResults(10, 20, 0, SignFilter_ANY))
 	if err != nil {
 		b.Fatalf("%+v\n", err)
 	}
